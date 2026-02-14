@@ -8,7 +8,7 @@ export class AgriHubDB extends Dexie {
   listings!: Table<MarketplaceListing>;
 
   constructor() {
-    super('AgriHubDB', { addons: [dexieCloud] });
+    super('AgriHubDB_v2', { addons: [dexieCloud] });
     this.version(2).stores({
       prices: 'id, commodity, location',
       weather: 'city',

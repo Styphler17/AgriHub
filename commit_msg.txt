@@ -1,6 +1,7 @@
-Resolve Dexie Cloud SchemaError and improve data ownership
+Fix CORS issues and modernize build process
 
-- Removed ++id from synced tables (prices, listings) to resolve SchemaError.
-- Incremented DB version to 2 to trigger schema migration.
-- Updated Marketplace component to use the authenticated user's real ID and Name for new postings.
-- Introduced useObservable in Marketplace to track current user context.
+- Whitelisted http://localhost:3000 for Dexie Cloud authentication.
+- Replaced Tailwind CSS CDN with native Vite/NPM integration.
+- Consolidated custom styles and fonts into index.css.
+- Removed external CDN assets from sw.js to fix Service Worker fetch errors.
+- Cleaned up index.html by removing import maps and CDN scripts.
