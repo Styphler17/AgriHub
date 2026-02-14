@@ -1,5 +1,5 @@
-Automatically assign currency to marketplace prices
+Implement listing deletion for authors
 
-- Modified handlePost in Marketplace.tsx to automatically prepend 'GH₵' to the price if no currency symbol is provided.
-- Updated the price input UI in the marketplace modal to display a fixed 'GH₵' prefix for better user experience.
-- Improved price data consistency across the platform.
+- Added handleDelete function to Marketplace.tsx to remove listings from database and state.
+- Added a Trash icon button to listing cards, visible only to the author of the listing.
+- Integrated browser confirm() for safe deletion.

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useObservable } from 'dexie-react-hooks';
 import { MarketplaceListing } from '../types';
 import { db } from '../db';
-import { ShoppingBag, Search, Plus, MessageCircle, MapPin, Tag, X, User as UserIcon, Check, Map as MapIcon, List } from 'lucide-react';
+import { ShoppingBag, Search, Plus, MessageCircle, MapPin, Tag, X, User as UserIcon, Check, Map as MapIcon, List, Trash2 } from 'lucide-react';
 
 interface Props {
   lang: string;
@@ -41,6 +41,13 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
   const loadListings = async () => {
     const data = await db.listings.toArray();
     setListings(data.length > 0 ? data : MOCK_LISTINGS);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Are you sure you want to remove this listing?')) {
+      await db.listings.delete(id);
+      setListings(listings.filter(l => l.id !== id));
+    }
   };
 
   const handlePost = async (e: React.FormEvent) => {
@@ -155,13 +162,24 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
                       <div className="text-[10px] text-slate-400 font-bold flex items-center gap-1 uppercase tracking-tighter">Verified Farmer <Check size={10} className="text-green-600" /></div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => window.open(`tel:${item.contact}`)}
-                    className="bg-green-600 text-white p-4 rounded-2xl shadow-xl shadow-green-600/20 hover:bg-green-700 active:scale-90 transition-all"
-                    aria-label="Contact seller"
-                  >
-                    <MessageCircle size={24} />
-                  </button>
+                  <div className="flex gap-2">
+                    {item.userId === currentUser?.userId && (
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="bg-red-50 text-red-500 p-4 rounded-2xl hover:bg-red-100 active:scale-90 transition-all border border-red-100"
+                        aria-label="Delete listing"
+                      >
+                        <Trash2 size={24} />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => window.open(`tel:${item.contact}`)}
+                      className="bg-green-600 text-white p-4 rounded-2xl shadow-xl shadow-green-600/20 hover:bg-green-700 active:scale-90 transition-all"
+                      aria-label="Contact seller"
+                    >
+                      <MessageCircle size={24} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
