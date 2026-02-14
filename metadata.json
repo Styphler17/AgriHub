@@ -1,0 +1,7 @@
+{
+  "name": "Ghana AgriHub",
+  "description": "A comprehensive digital platform for smallholder farmers in Ghana, providing AI-powered crop advice, real-time market prices, localized weather forecasts, and an offline-first marketplace.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

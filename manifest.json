@@ -1,0 +1,18 @@
+
+{
+  "name": "Ghana AgriHub",
+  "short_name": "AgriHub",
+  "description": "Empowering Ghanaian farmers with AI and real-time data.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#16a34a",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2329/2329113.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
