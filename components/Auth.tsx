@@ -9,6 +9,8 @@ interface Props {
 
 const Auth: React.FC<Props> = ({ lang, t }) => {
   const [email, setEmail] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [loading, setLoading] = useState(false);
@@ -34,6 +36,23 @@ const Auth: React.FC<Props> = ({ lang, t }) => {
     setError(null);
     try {
       await db.cloud.login({ email, otp });
+
+      // On success, we wait a beat for the user to be initialized in Dexie Cloud
+      // and then save their name to our profiles table
+      const fullName = `${firstName.trim()} ${lastName.trim()}`;
+
+      // Dexie Cloud login is async and returns after response. 
+      // The db.cloud.currentUser will be updated shortly.
+      // We can try to get the userId and save the profile.
+      const userId = db.cloud.currentUser.getValue()?.userId;
+      if (userId && fullName.length > 1) {
+        await db.profiles.put({
+          id: userId,
+          name: fullName,
+          location: 'Ghana',
+          role: 'farmer'
+        });
+      }
     } catch (err: any) {
       setError(err.message || 'Invalid OTP. Please check your email.');
     } finally {
@@ -64,6 +83,31 @@ const Auth: React.FC<Props> = ({ lang, t }) => {
 
           {step === 'email' ? (
             <form onSubmit={handleSendOtp} className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">First Name</label>
+                  <input
+                    required
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-green-600 focus:bg-white rounded-[1.2rem] transition-all outline-none font-bold text-slate-700"
+                    placeholder="Kojo"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Last Name</label>
+                  <input
+                    required
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-green-600 focus:bg-white rounded-[1.2rem] transition-all outline-none font-bold text-slate-700"
+                    placeholder="Asante"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
                 <div className="relative group">

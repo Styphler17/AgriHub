@@ -139,9 +139,20 @@ const App: React.FC = () => {
 
   const handleUpdateUser = async (updatedUser: User) => {
     try {
+      // 1. Update the profile
       await db.profiles.put(updatedUser);
+
+      // 2. Sync name/image to all their listings for immediate consistency
+      await db.listings
+        .where('userId')
+        .equals(updatedUser.id)
+        .modify({
+          userName: updatedUser.name,
+          userProfileImage: updatedUser.profileImage
+        });
+
     } catch (err) {
-      console.error("Failed to update profile:", err);
+      console.error("Failed to update profile and synchronize listings:", err);
     }
   };
 

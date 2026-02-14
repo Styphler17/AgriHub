@@ -1,6 +1,6 @@
-Fix Marketplace UI Overflows, Real Name Display, and Cleanup
+Synchronize Names and Improve Account Creation
 
-- Updated Marketplace.tsx to use the synced user profile for real name display on listings.
-- Improved the listing card layout with 'truncate', 'min-w-0', and 'shrink-0' to prevent buttons and names from overflowing.
-- Added a one-time cleanup script in App.tsx to remove lingering mock listings (Kojo Asante, etc.) from the database.
-- Passed the 'user' prop from App.tsx to Marketplace to ensure profile data consistency.
+- Refactored Auth.tsx to collect First and Last names during signup, automatically creating a user profile on successful login.
+- Modified handleUpdateUser in App.tsx to propagate name and profile image changes to all of a user's marketplace listings.
+- Improved data consistency and personalization across the app.
+- Added automatic cleanup of hardcoded mock listings on startup.
