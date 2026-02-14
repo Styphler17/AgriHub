@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useObservable, useLiveQuery } from 'dexie-react-hooks';
 import { translations } from './translations';
-import { Language, User } from './types';
+import { Language, User, Toast } from './types';
 import Dashboard from './components/Dashboard';
 import CropAdvisor from './components/CropAdvisor';
 import MarketPrices, { MOCK_PRICES } from './components/MarketPrices';
@@ -24,7 +24,11 @@ import {
   Cloud,
   CloudOff,
   RefreshCcw,
-  Check
+  Check,
+  AlertTriangle,
+  Info,
+  History,
+  ShieldCheck
 } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -34,11 +38,20 @@ const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [lowDataMode, setLowDataMode] = useState(() => localStorage.getItem('agrihub_lowdata') === 'true');
-  const [notification, setNotification] = useState<{ title: string, message: string } | null>(null);
+  const [toasts, setToasts] = useState<Toast[]>([]);
 
   // Real Dexie Cloud State
   const currentUser = useObservable(db.cloud.currentUser);
   const syncState = useObservable(db.cloud.syncState);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info') => {
+    const id = Math.random().toString(36).substr(2, 9);
+    const newToast: Toast = { id, message, type };
+    setToasts(prev => [...prev, newToast]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 4000);
+  };
 
   // Persistent Profile from 'profiles' table
   const storedProfile = useLiveQuery(
@@ -158,31 +171,41 @@ const App: React.FC = () => {
 
   return (
     <div className={`min-h-screen flex transition-colors duration-500 ${darkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'}`}>
-      {notification && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4 animate-in fade-in slide-in-from-top-4">
-          <div className={`flex items-center gap-4 p-5 rounded-[2rem] border shadow-2xl ${darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-100 text-slate-900'}`}>
-            <div className="p-3 bg-green-100 text-green-600 rounded-2xl shadow-inner">
-              <BellRing size={24} className="animate-bounce" />
+
+      {/* Premium Global Toasts */}
+      <div className="fixed top-8 right-8 z-[120] flex flex-col gap-4 max-w-sm w-full">
+        {toasts.map(toast => (
+          <div
+            key={toast.id}
+            className={`p-6 rounded-[2rem] border-2 shadow-2xl animate-in slide-in-from-right-8 fade-in duration-300 flex items-center gap-4 ${toast.type === 'success' ? (darkMode ? 'bg-green-900/40 border-green-500/30 text-green-300' : 'bg-green-50 border-green-200 text-green-700') :
+              toast.type === 'error' ? (darkMode ? 'bg-red-900/40 border-red-500/30 text-red-300' : 'bg-red-50 border-red-200 text-red-700') :
+                toast.type === 'warning' ? (darkMode ? 'bg-amber-900/40 border-amber-500/30 text-amber-300' : 'bg-amber-50 border-amber-200 text-amber-700') :
+                  (darkMode ? 'bg-slate-800 border-slate-700 text-white' : 'bg-white border-slate-100 text-slate-900')
+              }`}
+          >
+            <div className={`p-2 rounded-xl ${toast.type === 'success' ? 'bg-green-500/20' :
+              toast.type === 'error' ? 'bg-red-500/20' :
+                toast.type === 'warning' ? 'bg-amber-500/20' : 'bg-slate-500/20'
+              }`}>
+              {toast.type === 'success' && <Check size={20} />}
+              {toast.type === 'error' && <AlertTriangle size={20} />}
+              {toast.type === 'warning' && <ShieldCheck size={20} />}
+              {toast.type === 'info' && <Info size={20} />}
             </div>
-            <div className="flex-1">
-              <h4 className="font-black text-sm">{notification.title}</h4>
-              <p className="text-xs opacity-70 leading-tight">{notification.message}</p>
-            </div>
-            <button onClick={() => setNotification(null)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg">
-              <X size={18} />
-            </button>
+            <p className="font-black text-sm pr-4">{toast.message}</p>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
 
       {isSidebarOpen && <div className="fixed inset-0 bg-black/50 z-40 lg:hidden backdrop-blur-sm" onClick={() => setIsSidebarOpen(false)} />}
 
-      <aside className={`fixed inset-y-0 left-0 z-50 w-72 transform transition-transform duration-300 lg:relative lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${darkMode ? 'bg-slate-800/90 border-slate-700' : 'bg-white border-slate-200'} border-r backdrop-blur-xl shadow-2xl lg:shadow-none`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-80 transform transition-transform duration-300 lg:relative lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${darkMode ? 'bg-slate-800/90 border-slate-700' : 'bg-white border-slate-200'} border-r backdrop-blur-xl shadow-2xl lg:shadow-none`}>
         <div className="flex flex-col h-full">
           <div className="p-8">
             <h1 className="text-3xl font-black text-green-600 flex items-center gap-3"><Sprout size={32} /> AgriHub</h1>
             <p className="text-[10px] uppercase tracking-widest font-bold opacity-40 mt-1">Farmer Empowerment</p>
           </div>
+
           <nav className="flex-1 px-6 space-y-2 overflow-y-auto custom-scrollbar">
             {navItems.map(item => (
               <button
@@ -195,9 +218,40 @@ const App: React.FC = () => {
               </button>
             ))}
           </nav>
-          <div className="p-6 border-t border-slate-200 dark:border-slate-700">
+
+          <div className="p-6 space-y-4 border-t border-slate-200 dark:border-slate-700">
+            {/* Sync Status Hub */}
+            <div className={`p-5 rounded-[2rem] border flex flex-col gap-3 ${darkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Sync Pipeline</span>
+                {syncState?.phase === 'pushing' ? (
+                  <RefreshCcw size={12} className="text-green-500 animate-spin" />
+                ) : (
+                  <Cloud size={12} className={isOnline ? 'text-green-500' : 'text-slate-400'} />
+                )}
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${syncState?.phase === 'pushing' ? 'bg-green-100 text-green-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+                  <Cloud size={20} />
+                </div>
+                <div>
+                  <div className="text-xs font-black capitalize leading-none mb-1">{syncState?.phase || 'Dormant'}</div>
+                  <div className="text-[10px] font-bold text-slate-400">
+                    {isOnline ? (syncState?.phase === 'pushing' ? 'Uploading records...' : 'Cloud in sync') : 'Awaiting network...'}
+                  </div>
+                </div>
+              </div>
+
+              {syncState?.phase === 'pushing' && (
+                <div className="w-full h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div className="h-full bg-green-500 animate-progress w-1/2"></div>
+                </div>
+              )}
+            </div>
+
             {user && (
-              <div className="flex items-center gap-4 mb-6 p-4 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
+              <div className="flex items-center gap-4 p-4 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
                 <div className="w-14 h-14 rounded-2xl overflow-hidden bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-xl font-black text-green-600 shadow-inner shrink-0">
                   {user.profileImage ? (
                     <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
@@ -259,7 +313,7 @@ const App: React.FC = () => {
         <div className="flex-1 overflow-y-auto p-6 lg:p-10 max-w-7xl mx-auto w-full custom-scrollbar">
           {activeTab === 'dashboard' && <Dashboard lang={lang} t={t} darkMode={darkMode} isOnline={isOnline} onNavigate={setActiveTab} />}
           {activeTab === 'advice' && <CropAdvisor lang={lang} t={t} darkMode={darkMode} />}
-          {activeTab === 'prices' && <MarketPrices lang={lang} t={t} darkMode={darkMode} isOnline={isOnline} user={user} />}
+          {activeTab === 'prices' && <MarketPrices lang={lang} t={t} darkMode={darkMode} isOnline={isOnline} user={user} showToast={showToast} />}
           {activeTab === 'marketplace' && <Marketplace lang={lang} t={t} darkMode={darkMode} user={user} />}
           {activeTab === 'settings' && user && (
             <SettingsView
@@ -272,6 +326,7 @@ const App: React.FC = () => {
               lowDataMode={lowDataMode}
               setLowDataMode={setLowDataMode}
               t={t}
+              showToast={showToast}
             />
           )}
         </div>

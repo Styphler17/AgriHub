@@ -54,3 +54,18 @@ export interface MarketplaceListing {
   location: string;
   contact: string;
 }
+export interface PriceHistory {
+  id?: number;
+  priceId: string;
+  commodity: string;
+  oldPrice: number;
+  newPrice: number;
+  changedBy: string;
+  timestamp: string;
+}
+
+export interface Toast {
+  id: string;
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+}

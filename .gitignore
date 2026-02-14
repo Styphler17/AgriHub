@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 dexie-cloud.key
+.env
+.env.local
+.env.*.local

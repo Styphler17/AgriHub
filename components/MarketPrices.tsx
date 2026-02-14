@@ -48,6 +48,7 @@ interface Props {
   darkMode: boolean;
   isOnline: boolean;
   user: User | null;
+  showToast: (message: string, type?: 'success' | 'error' | 'warning' | 'info') => void;
 }
 
 const HISTORICAL_DATA_VARIANTS: Record<string, any[]> = {
@@ -78,8 +79,9 @@ const COMMODITY_ICONS: Record<string, any> = {
   'default': Sprout
 };
 
-const MarketPrices: React.FC<Props> = ({ lang, t, darkMode, isOnline, user }) => {
+const MarketPrices: React.FC<Props> = ({ lang, t, darkMode, isOnline, user, showToast }) => {
   const prices = useLiveQuery(() => db.prices.toArray()) || [];
+  const priceHistory = useLiveQuery(() => db.priceHistory.orderBy('timestamp').reverse().limit(10).toArray()) || [];
   const [filter, setFilter] = useState('');
   const [trendFilter, setTrendFilter] = useState<'all' | 'up' | 'down' | 'stable'>('all');
   const [selectedCommodityId, setSelectedCommodityId] = useState<string | null>(null);
@@ -115,18 +117,42 @@ const MarketPrices: React.FC<Props> = ({ lang, t, darkMode, isOnline, user }) =>
     try {
       const oldPrice = prices.find(p => p.id === editingPriceItem.id)?.price || editingPriceItem.price;
       const newPrice = Number(editingPriceItem.price);
+
+      // Guardian Validation: 50% volatility check
+      const deviation = Math.abs(newPrice - oldPrice) / oldPrice;
+      if (deviation > 0.5) {
+        const confirmMsg = `WARNING: Price change is ${Math.round(deviation * 100)}%. This will cause high market volatility. Proceed?`;
+        if (!window.confirm(confirmMsg)) {
+          showToast('Price update cancelled for safety.', 'warning');
+          return;
+        }
+      }
+
       const trend = newPrice > oldPrice ? 'up' : newPrice < oldPrice ? 'down' : 'stable';
 
+      // 1. Log Audit Record
+      await db.priceHistory.add({
+        priceId: editingPriceItem.id,
+        commodity: editingPriceItem.commodity,
+        oldPrice: oldPrice,
+        newPrice: newPrice,
+        changedBy: user?.name || 'Unknown Officer',
+        timestamp: new Date().toISOString()
+      });
+
+      // 2. Update Source
       await db.prices.update(editingPriceItem.id, {
         price: newPrice,
         trend: trend,
         updatedAt: new Date().toLocaleTimeString()
       });
 
+      showToast(`${editingPriceItem.commodity} price updated successfully.`, 'success');
       setIsEditingPrice(false);
       setEditingPriceItem(null);
     } catch (err) {
       console.error('Failed to update price:', err);
+      showToast('Critical error during price sync.', 'error');
     }
   };
 
@@ -403,6 +429,33 @@ const MarketPrices: React.FC<Props> = ({ lang, t, darkMode, isOnline, user }) =>
               </div>
             );
           })}
+
+          {/* Audit Trail Section */}
+          <div className={`mt-4 p-8 rounded-[2.5rem] border ${darkMode ? 'bg-slate-900 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-6">
+              <History size={14} className="text-amber-500" /> Official Audit Trail
+            </h4>
+            <div className="space-y-4">
+              {priceHistory.map((log) => (
+                <div key={log.id} className="flex gap-4 items-start">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${darkMode ? 'bg-slate-800' : 'bg-white shadow-sm'}`}>
+                    {log.newPrice > log.oldPrice ? <ArrowUpRight size={14} className="text-green-500" /> : <ArrowDownRight size={14} className="text-red-500" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] font-black leading-none mb-1">
+                      {log.commodity} updated to <span className="text-green-600">₵{log.newPrice}</span>
+                    </p>
+                    <p className="text-[10px] font-bold text-slate-400 truncate">
+                      By {log.changedBy} • {new Date(log.timestamp).toLocaleTimeString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {priceHistory.length === 0 && (
+                <p className="text-[10px] font-bold text-slate-400 italic text-center py-4">No recent official modifications.</p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

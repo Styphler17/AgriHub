@@ -28,6 +28,7 @@ interface Props {
   lowDataMode: boolean;
   setLowDataMode: (low: boolean) => void;
   t: any;
+  showToast: (message: string, type?: 'success' | 'error' | 'warning' | 'info') => void;
 }
 
 const SettingsView: React.FC<Props> = ({
@@ -39,7 +40,8 @@ const SettingsView: React.FC<Props> = ({
   setDarkMode,
   lowDataMode,
   setLowDataMode,
-  t
+  t,
+  showToast
 }) => {
   const [name, setName] = useState(user.name);
   const [location, setLocation] = useState(user.location);
@@ -56,9 +58,12 @@ const SettingsView: React.FC<Props> = ({
     setAuthError(null);
 
     // Role protection logic
+    const ADMIN_SECRET = import.meta.env.VITE_ADMIN_SECRET || 'AGRI-GH-OFFICIAL-ADMIN-99X-PRIV';
+
     if (role === 'extension-officer' && user.role !== 'extension-officer') {
-      if (verificationCode !== 'AGRI-OFFICER-2024') {
-        setAuthError('Invalid Verification Key. Promotion to Extension Officer denied.');
+      if (verificationCode !== ADMIN_SECRET) {
+        setAuthError('Unauthorized: Individual verification key required for Extension Officer privileges.');
+        showToast('Administrative promotion denied.', 'error');
         return;
       }
     }
@@ -66,6 +71,7 @@ const SettingsView: React.FC<Props> = ({
     setUser({ ...user, name, location, role, profileImage, phoneNumber: phone });
     setIsSaved(true);
     setVerificationCode('');
+    showToast('Profile information saved successfully.', 'success');
     setTimeout(() => setIsSaved(false), 2000);
   };
 
