@@ -17,7 +17,7 @@ export class AgriHubDB extends Dexie {
 
     this.cloud.configure({
       databaseUrl: "https://zd5fgzz6e.dexie.cloud",
-      requireAuth: false
+      requireAuth: true
     });
   }
 }

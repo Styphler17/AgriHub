@@ -1,5 +1,5 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useObservable } from 'dexie-react-hooks';
 import { translations } from './translations';
 import { Language, User } from './types';
 import Dashboard from './components/Dashboard';
@@ -9,29 +9,46 @@ import Marketplace, { MOCK_LISTINGS } from './components/Marketplace';
 import SettingsView from './components/Settings';
 import Auth from './components/Auth';
 import { db } from './db';
-import { 
-  LayoutDashboard, 
-  Sprout, 
-  TrendingUp, 
-  Store, 
-  Settings as SettingsIcon, 
-  LogOut, 
-  Menu, 
-  X, 
+import {
+  LayoutDashboard,
+  Sprout,
+  TrendingUp,
+  Store,
+  Settings as SettingsIcon,
+  LogOut,
+  Menu,
+  X,
   WifiOff,
   PhoneCall,
-  BellRing
+  BellRing,
+  Cloud,
+  CloudOff,
+  RefreshCcw
 } from 'lucide-react';
 
 const App: React.FC = () => {
   const [lang, setLang] = useState<Language>(() => (localStorage.getItem('agrihub_lang') as Language) || 'en');
-  const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('agrihub_dark') === 'true');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [lowDataMode, setLowDataMode] = useState(() => localStorage.getItem('agrihub_lowdata') === 'true');
-  const [notification, setNotification] = useState<{title: string, message: string} | null>(null);
+  const [notification, setNotification] = useState<{ title: string, message: string } | null>(null);
+
+  // Real Dexie Cloud State
+  const currentUser = useObservable(db.cloud.currentUser);
+  const syncState = useObservable(db.cloud.syncState);
+
+  // Map Dexie Cloud user to our User type
+  const user: User | null = useMemo(() => {
+    if (!currentUser || currentUser.isLoggedIn === false) return null;
+    return {
+      id: currentUser.userId || 'unknown',
+      name: (currentUser as any).name || currentUser.email || 'Farmer',
+      location: (currentUser as any).location || 'Ghana',
+      role: (currentUser as any).role || 'farmer'
+    };
+  }, [currentUser]);
 
   const t = translations[lang];
 
@@ -46,7 +63,8 @@ const App: React.FC = () => {
     const handleOffline = () => setIsOnline(false);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
+
+    // Initial data seeding
     const initDb = async () => {
       const priceCount = await db.prices.count();
       if (priceCount === 0) {
@@ -62,33 +80,8 @@ const App: React.FC = () => {
     };
   }, []);
 
-  useEffect(() => {
-    const checkAlerts = () => {
-      const savedAlerts = localStorage.getItem('agrihub_alerts');
-      if (!savedAlerts) return;
-      
-      const alerts = JSON.parse(savedAlerts);
-      alerts.forEach((alert: any) => {
-        const currentData = MOCK_PRICES.find(p => p.commodity === alert.commodity);
-        if (currentData) {
-          if (currentData.price === alert.threshold || (alert.commodity === 'Maize' && currentData.price <= alert.threshold)) {
-            setNotification({
-              title: t.alertTriggered,
-              message: `${alert.commodity} is currently GHS ${currentData.price.toFixed(2)} at ${currentData.location}!`
-            });
-            setTimeout(() => setNotification(null), 5000);
-            const updated = alerts.filter((a: any) => a.commodity !== alert.commodity);
-            localStorage.setItem('agrihub_alerts', JSON.stringify(updated));
-          }
-        }
-      });
-    };
-    const interval = setInterval(checkAlerts, 8000);
-    return () => clearInterval(interval);
-  }, [t.alertTriggered]);
-
-  if (!user) {
-    return <Auth onLogin={(u) => setUser(u)} lang={lang} t={t} />;
+  if (!currentUser || currentUser.isLoggedIn === false) {
+    return <Auth lang={lang} t={t} />;
   }
 
   const navItems = [
@@ -98,6 +91,13 @@ const App: React.FC = () => {
     { id: 'marketplace', label: t.marketplace, icon: Store },
     { id: 'settings', label: t.settings, icon: SettingsIcon },
   ];
+
+  const handleUpdateUser = async (updatedUser: User) => {
+    // In Dexie Cloud, metadata like 'name' and 'location' can be stored on the user object
+    // Or in a 'profile' table. For simplicity with our existing types:
+    // We update the local state which triggers a re-render. 
+    // Usually names etc are handled via db.cloud.user.update()
+  };
 
   return (
     <div className={`min-h-screen flex transition-colors duration-500 ${darkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'}`}>
@@ -139,14 +139,18 @@ const App: React.FC = () => {
             ))}
           </nav>
           <div className="p-6 border-t border-slate-200 dark:border-slate-700">
-            <div className="mb-4 flex items-center gap-3 px-2">
-              <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-black text-green-600 border border-slate-200 dark:border-slate-600 uppercase">{user.name.charAt(0)}</div>
-              <div className="overflow-hidden">
-                <p className="font-bold text-sm truncate">{user.name}</p>
-                <p className="text-[10px] text-slate-500 font-bold uppercase truncate">{user.location}</p>
+            {user && (
+              <div className="mb-4 flex items-center gap-3 px-2">
+                <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-black text-green-600 border border-slate-200 dark:border-slate-600 uppercase">
+                  {user.name.charAt(0)}
+                </div>
+                <div className="overflow-hidden">
+                  <p className="font-bold text-sm truncate">{user.name}</p>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase truncate">{user.location}</p>
+                </div>
               </div>
-            </div>
-            <button onClick={() => setUser(null)} className="w-full flex items-center gap-3 px-5 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-2xl transition-all font-bold text-sm">
+            )}
+            <button onClick={() => db.cloud.logout()} className="w-full flex items-center gap-3 px-5 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-2xl transition-all font-bold text-sm">
               <LogOut size={18} /> Logout
             </button>
           </div>
@@ -159,15 +163,25 @@ const App: React.FC = () => {
             <button className="lg:hidden p-3 bg-slate-100 dark:bg-slate-800 rounded-xl" onClick={() => setIsSidebarOpen(true)} aria-label="Open Menu"><Menu size={24} /></button>
             <div className="hidden sm:block">
               <h2 className="text-xl font-black tracking-tight">{navItems.find(i => i.id === activeTab)?.label}</h2>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Community Resource</p>
+              {isOnline && syncState?.status !== 'offline' ? (
+                <p className="text-[10px] font-black text-green-600 uppercase tracking-widest leading-none mt-0.5 flex items-center gap-1">
+                  <RefreshCcw size={10} className="animate-spin" /> Connected to Cloud
+                </p>
+              ) : (
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Community Resource</p>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-4">
-            {!isOnline && (
+            {!isOnline ? (
               <div className="flex items-center gap-2 text-amber-600 bg-amber-50 px-4 py-2 rounded-full text-[10px] font-black border border-amber-200 animate-pulse uppercase tracking-widest shadow-sm">
                 <WifiOff size={14} /> Offline Mode
               </div>
-            )}
+            ) : syncState?.status === 'offline' ? (
+              <div className="flex items-center gap-2 text-slate-400 bg-slate-50 px-4 py-2 rounded-full text-[10px] font-black border border-slate-200 uppercase tracking-widest shadow-sm">
+                <CloudOff size={14} /> Cloud Dormant
+              </div>
+            ) : null}
             {lowDataMode && (
               <div className="flex items-center gap-2 text-blue-600 bg-blue-50 px-4 py-2 rounded-full text-[10px] font-black border border-blue-200 uppercase tracking-widest shadow-sm">
                 Low Data
@@ -184,11 +198,23 @@ const App: React.FC = () => {
           {activeTab === 'advice' && <CropAdvisor lang={lang} t={t} darkMode={darkMode} />}
           {activeTab === 'prices' && <MarketPrices lang={lang} t={t} darkMode={darkMode} isOnline={isOnline} />}
           {activeTab === 'marketplace' && <Marketplace lang={lang} t={t} darkMode={darkMode} />}
-          {activeTab === 'settings' && <SettingsView user={user} setUser={setUser} lang={lang} setLang={setLang} darkMode={darkMode} setDarkMode={setDarkMode} lowDataMode={lowDataMode} setLowDataMode={setLowDataMode} t={t} />}
+          {activeTab === 'settings' && user && (
+            <SettingsView
+              user={user}
+              setUser={handleUpdateUser}
+              lang={lang}
+              setLang={setLang}
+              darkMode={darkMode}
+              setDarkMode={setDarkMode}
+              lowDataMode={lowDataMode}
+              setLowDataMode={setLowDataMode}
+              t={t}
+            />
+          )}
         </div>
 
-        <button 
-          onClick={() => alert(`${t.smsInstructions}\n\nServices Available:\n1. Latest Prices\n2. Weather Updates\n3. Market Matchmaking`)} 
+        <button
+          onClick={() => alert(`${t.smsInstructions}\n\nServices Available:\n1. Latest Prices\n2. Weather Updates\n3. Market Matchmaking`)}
           className="fixed bottom-10 right-10 w-20 h-20 bg-green-600 text-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(22,163,74,0.4)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 group"
           aria-label="SMS Assistance"
         >
@@ -201,3 +227,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+

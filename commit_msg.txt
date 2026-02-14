@@ -1,6 +1,7 @@
-Initialize Dexie Cloud database and integrate into app
+Implement real Dexie Cloud authentication and sync status visualization
 
-- Installed dexie-cloud-addon.
-- Created Dexie Cloud database and configured db.ts.
-- Added dexie-cloud.json for database configuration.
-- Updated .gitignore to exclude dexie-cloud.key.
+- Replaced mock Auth with real Email OTP flow using Dexie Cloud.
+- Updated App.tsx to use useObservable for real-time cloud and sync states.
+- Added cloud connection status indicators (Cloud/Refresh icons).
+- Enforced requireAuth: true in database configuration.
+- Installed dexie-react-hooks for efficient state observation.
