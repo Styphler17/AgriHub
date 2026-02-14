@@ -1,0 +1,6 @@
+Initialize Dexie Cloud database and integrate into app
+
+- Installed dexie-cloud-addon.
+- Created Dexie Cloud database and configured db.ts.
+- Added dexie-cloud.json for database configuration.
+- Updated .gitignore to exclude dexie-cloud.key.
