@@ -208,7 +208,25 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
                 <input required value={newListing.contact} onChange={e => setNewListing({...newListing, contact: e.target.value})} className={`w-full px-6 py-4 rounded-2xl border-2 outline-none ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`} placeholder="024 XXX XXXX" />
               </div>
 
-              <button type="submit" className="w-full py-5 bg-green-600 text-white rounded-[1.5rem] font-black text-xl shadow-2xl shadow-green-600/30 hover:bg-green-700 hover:scale-[1.02] active:scale-95 transition-all">Post to Market</button>
+              <div className="flex gap-4 pt-4">
+                <button 
+                  type="button" 
+                  onClick={() => setShowPostModal(false)} 
+                  className={`flex-1 py-5 rounded-[1.5rem] font-black text-xl transition-all ${
+                    darkMode 
+                      ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' 
+                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                  }`}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="flex-[2] py-5 bg-green-600 text-white rounded-[1.5rem] font-black text-xl shadow-2xl shadow-green-600/30 hover:bg-green-700 hover:scale-[1.02] active:scale-95 transition-all"
+                >
+                  Post to Market
+                </button>
+              </div>
             </form>
           </div>
         </div>
