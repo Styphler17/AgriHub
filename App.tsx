@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useObservable } from 'dexie-react-hooks';
+import { useObservable, useLiveQuery } from 'dexie-react-hooks';
 import { translations } from './translations';
 import { Language, User } from './types';
 import Dashboard from './components/Dashboard';
@@ -40,6 +40,12 @@ const App: React.FC = () => {
   const currentUser = useObservable(db.cloud.currentUser);
   const syncState = useObservable(db.cloud.syncState);
 
+  // Persistent Profile from 'profiles' table
+  const storedProfile = useLiveQuery(
+    () => db.profiles.get(currentUser?.userId || 'unknown'),
+    [currentUser?.userId]
+  );
+
   // Explicit logout handler
   const handleLogout = async () => {
     try {
@@ -53,16 +59,26 @@ const App: React.FC = () => {
     }
   };
 
-  // Map Dexie Cloud user to our User type
+  // Map Dexie Cloud user to our User type, merging with stored profile
   const user: User | null = useMemo(() => {
     if (!currentUser || !currentUser.isLoggedIn) return null;
-    return {
+
+    // Default values if no stored profile yet
+    const baseUser: User = {
       id: currentUser.userId || 'unknown',
       name: (currentUser as any).name || currentUser.email || 'Farmer',
-      location: (currentUser as any).location || 'Ghana',
-      role: (currentUser as any).role || 'farmer'
+      location: 'Ghana',
+      role: 'farmer'
     };
-  }, [currentUser]);
+
+    // Merge with stored profile if it exists
+    if (!storedProfile) return baseUser;
+
+    return {
+      ...baseUser,
+      ...storedProfile
+    };
+  }, [currentUser, storedProfile]);
 
   const t = translations[lang];
 
@@ -119,10 +135,11 @@ const App: React.FC = () => {
   ];
 
   const handleUpdateUser = async (updatedUser: User) => {
-    // In Dexie Cloud, metadata like 'name' and 'location' can be stored on the user object
-    // Or in a 'profile' table. For simplicity with our existing types:
-    // We update the local state which triggers a re-render. 
-    // Usually names etc are handled via db.cloud.user.update()
+    try {
+      await db.profiles.put(updatedUser);
+    } catch (err) {
+      console.error("Failed to update profile:", err);
+    }
   };
 
   return (

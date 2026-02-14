@@ -1,7 +1,6 @@
-Implement Profile Images and Enhanced Twi Translations
+Fix Profile Persistence and Metadata Synchronization
 
-- Added support for user profile images in the User and MarketplaceListing types.
-- Updated Settings page with a profile photo upload feature (Base64).
-- Integrated profile images into the sidebar and Marketplace listings.
-- Performed a comprehensive Twi translation pass, adding missing keys and improving linguistic accuracy and natural phrasing for farmers.
-- Cleaned up the sidebar UI and ensured full internationalization support.
+- Added a 'profiles' table to the Dexie schema (v3) to persist user-defined metadata (name, photo, location, role) across cloud sync.
+- Switched to useLiveQuery in App.tsx for real-time reactivity when the profile changes.
+- Implemented handleUpdateUser to properly save the profile object to the database.
+- Fixed the UI not updating after saving a profile image by ensuring the memoized 'user' object merges the stored profile correctly.
