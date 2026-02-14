@@ -1,5 +1,7 @@
-Upgrade to Tailwind CSS v4 PostCSS integration
+Implement Profile Images and Enhanced Twi Translations
 
-- Installed @tailwindcss/postcss as required by Tailwind v4.
-- Updated postcss.config.js to use the new @tailwindcss/postcss plugin.
-- Updated index.css to use Tailwind v4 @import "tailwindcss" directive.
+- Added support for user profile images in the User and MarketplaceListing types.
+- Updated Settings page with a profile photo upload feature (Base64).
+- Integrated profile images into the sidebar and Marketplace listings.
+- Performed a comprehensive Twi translation pass, adding missing keys and improving linguistic accuracy and natural phrasing for farmers.
+- Cleaned up the sidebar UI and ensured full internationalization support.

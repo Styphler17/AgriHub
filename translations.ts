@@ -1,4 +1,3 @@
-
 export const translations = {
   en: {
     dashboard: "Dashboard",
@@ -27,6 +26,21 @@ export const translations = {
     setAlert: "Set Alert",
     allRegions: "All Regions",
     alertTriggered: "Price Alert Triggered!",
+    profileInfo: "Profile Information",
+    fullName: "Full Name",
+    location: "Location",
+    role: "Role",
+    saveChanges: "Save Changes",
+    infoSaved: "Information Saved!",
+    profileImage: "Profile Image",
+    appPreferences: "App Preferences",
+    dataSecurity: "Data & Security",
+    exportData: "Export Account Data",
+    downloadBackup: "Download backup",
+    smsOffline: "SMS Offline Mode",
+    farmer: "Farmer",
+    buyer: "Buyer",
+    extensionOfficer: "Extension Officer",
     locations: {
       accra: "Accra",
       kumasi: "Kumasi",
@@ -47,9 +61,9 @@ export const translations = {
     english: "Borɔfo",
     lowData: "Data kakraa Mode",
     smsMode: "SMS Akwan",
-    getAdvice: "Nya AI Afutuo",
-    cropType: "Afuo mu nnuaba",
-    soilType: "Dɔteɛ biako",
+    getAdvice: "Nya Afutuo Pa",
+    cropType: "Nnuaba biako",
+    soilType: "Dɔteɛ ko",
     region: "Mantɛm",
     loading: "Yɛrehwɛ afutuo ama wo...",
     exportPdf: "Twa PDF",
@@ -59,15 +73,31 @@ export const translations = {
     favorites: "Me Deɛ",
     timeRange: "Bere",
     priceAlert: "Boɔ Kɔkɔbɔ",
-    setAlert: "Hyehyɛ Kɔkɔbɔ",
+    setAlert: "Hyehyɛ Boɔ Kɔkɔbɔ",
     allRegions: "Mantɛm nyinaa",
     alertTriggered: "Boɔ Kɔkɔbɔ Aba!",
+    profileInfo: "Wo Ho Nsɛm",
+    fullName: "Wo Din Nyinaa",
+    location: "Baabi a wowɔ",
+    role: "Adwuma ko",
+    saveChanges: "Kora Nsesaeɛ",
+    infoSaved: "Yɛakora Nsɛm no!",
+    profileImage: "Wo Mfoni",
+    appPreferences: "App mu Nsesaeɛ",
+    dataSecurity: "Data ne Ahobammɔ",
+    exportData: "Twa wo Nsɛm Nyinaa",
+    downloadBackup: "Twe backup firi ha",
+    smsOffline: "SMS Bere a Intanɛt ni",
+    farmer: "Okuafoɔ",
+    buyer: "Otɔfoɔ",
+    extensionOfficer: "Afuo ho Panin",
     locations: {
       accra: "Nkran",
       kumasi: "Kumasi",
       tamale: "Tamale",
-      takoradi: "Takoradi",
+      takoradi: "Takoradi (Tadi)",
       koforidua: "Koforidua"
     }
   }
 };
+

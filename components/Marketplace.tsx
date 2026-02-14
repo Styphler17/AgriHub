@@ -50,6 +50,7 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
       id: Math.random().toString(36).substr(2, 9),
       userId: currentUser?.userId || 'anonymous',
       userName: (currentUser as any)?.name || currentUser?.email || 'Farmer',
+      userProfileImage: (currentUser as any)?.profileImage,
     };
     await db.listings.add(listing);
     setListings([listing, ...listings]);
@@ -90,8 +91,21 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
           onClick={() => setShowPostModal(true)}
           className="w-full xl:w-auto bg-green-600 hover:bg-green-700 text-white font-black px-8 py-4 rounded-2xl shadow-2xl shadow-green-600/30 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all"
         >
-          <Plus size={24} strokeWidth={3} /> Post Listing
+          <Plus size={24} strokeWidth={3} /> Post New Listing
         </button>
+      </div>
+
+      <div className="flex bg-white dark:bg-slate-800 p-4 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
+        <div className="w-12 h-12 flex items-center justify-center text-slate-400">
+          <Search size={24} />
+        </div>
+        <input
+          type="text"
+          placeholder="Search by crop, fertilizer, region..."
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          className="flex-1 bg-transparent border-none outline-none font-bold text-slate-700 dark:text-slate-200"
+        />
       </div>
 
       {viewMode === 'grid' ? (
@@ -121,8 +135,12 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-lg font-black text-green-600 border border-slate-200 dark:border-slate-600">
-                      {item.userName.charAt(0)}
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-lg font-black text-green-600 border border-slate-200 dark:border-slate-600 shadow-inner">
+                      {item.userProfileImage ? (
+                        <img src={item.userProfileImage} alt={item.userName} className="w-full h-full object-cover" />
+                      ) : (
+                        item.userName.charAt(0)
+                      )}
                     </div>
                     <div>
                       <div className="text-sm font-black">{item.userName}</div>

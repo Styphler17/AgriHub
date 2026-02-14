@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { User, Language } from '../types';
 import { db } from '../db';
 import {
@@ -13,7 +12,9 @@ import {
   Check,
   Smartphone,
   DownloadCloud,
-  ShieldCheck
+  ShieldCheck,
+  Camera,
+  Upload
 } from 'lucide-react';
 
 interface Props {
@@ -42,13 +43,26 @@ const SettingsView: React.FC<Props> = ({
   const [name, setName] = useState(user.name);
   const [location, setLocation] = useState(user.location);
   const [role, setRole] = useState(user.role);
+  const [profileImage, setProfileImage] = useState(user.profileImage || '');
   const [isSaved, setIsSaved] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    setUser({ ...user, name, location, role });
+    setUser({ ...user, name, location, role, profileImage });
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const exportAllData = async () => {
@@ -80,15 +94,47 @@ const SettingsView: React.FC<Props> = ({
               <UserIcon size={24} />
             </div>
             <div>
-              <h2 className="text-2xl font-bold">Profile Information</h2>
-              <p className="text-slate-500 text-sm">Update your account details and role</p>
+              <h2 className="text-2xl font-bold">{t.profileInfo}</h2>
+              <p className="text-slate-500 text-sm">Update your account details and photo</p>
             </div>
           </div>
 
-          <form onSubmit={handleSaveProfile} className="space-y-6">
+          <form onSubmit={handleSaveProfile} className="space-y-8">
+            {/* Profile Image Upload */}
+            <div className="flex flex-col items-center gap-4 p-6 rounded-3xl bg-slate-50 dark:bg-slate-900/50 border-2 border-dashed border-slate-200 dark:border-slate-700">
+              <div className="relative group">
+                <div className="w-32 h-32 rounded-[2.5rem] bg-slate-200 dark:bg-slate-700 overflow-hidden border-4 border-white dark:border-slate-800 shadow-xl">
+                  {profileImage ? (
+                    <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-400">
+                      <UserIcon size={48} />
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-0 right-0 p-3 bg-green-600 text-white rounded-2xl shadow-lg hover:scale-110 active:scale-95 transition-all"
+                >
+                  <Camera size={20} />
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+              </div>
+              <div className="text-center text-xs font-black text-slate-400 uppercase tracking-widest leading-relaxed">
+                {profileImage ? 'Photo uploaded' : t.profileImage}
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">{t.fullName}</label>
                 <div className="relative">
                   <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <input
@@ -103,7 +149,7 @@ const SettingsView: React.FC<Props> = ({
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Location</label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">{t.location}</label>
                 <div className="relative">
                   <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <input
@@ -118,7 +164,7 @@ const SettingsView: React.FC<Props> = ({
               </div>
 
               <div className="space-y-2 sm:col-span-2">
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Role</label>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">{t.role}</label>
                 <div className="relative">
                   <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                   <select
@@ -127,9 +173,9 @@ const SettingsView: React.FC<Props> = ({
                     className={`w-full pl-12 pr-4 py-4 rounded-2xl border-2 outline-none transition-all appearance-none ${darkMode ? 'bg-slate-900 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'
                       }`}
                   >
-                    <option value="farmer">Farmer</option>
-                    <option value="buyer">Buyer</option>
-                    <option value="extension-officer">Extension Officer</option>
+                    <option value="farmer">{t.farmer}</option>
+                    <option value="buyer">{t.buyer}</option>
+                    <option value="extension-officer">{t.extensionOfficer}</option>
                   </select>
                 </div>
               </div>
@@ -140,7 +186,7 @@ const SettingsView: React.FC<Props> = ({
               className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-black px-8 py-4 rounded-2xl shadow-xl shadow-green-600/20 transition-all active:scale-95"
             >
               {isSaved ? <Check size={20} strokeWidth={3} /> : <Save size={20} strokeWidth={3} />}
-              {isSaved ? 'Information Saved!' : 'Save Profile Changes'}
+              {isSaved ? t.infoSaved : t.saveChanges}
             </button>
           </form>
         </section>
@@ -153,7 +199,7 @@ const SettingsView: React.FC<Props> = ({
                 <Globe size={24} />
               </div>
               <div>
-                <h2 className="text-2xl font-bold">App Preferences</h2>
+                <h2 className="text-2xl font-bold">{t.appPreferences}</h2>
                 <p className="text-slate-500 text-sm">Customize language and data usage</p>
               </div>
             </div>
@@ -163,7 +209,7 @@ const SettingsView: React.FC<Props> = ({
                 <div className="flex items-center gap-4">
                   <Globe size={20} className="text-slate-400" />
                   <div>
-                    <div className="font-bold">App Language</div>
+                    <div className="font-bold">{t.language}</div>
                     <div className="text-[10px] text-slate-500 font-black uppercase">English / Twi</div>
                   </div>
                 </div>
@@ -207,7 +253,7 @@ const SettingsView: React.FC<Props> = ({
                 <div className="flex items-center gap-4">
                   <Database size={20} className="text-slate-400" />
                   <div>
-                    <div className="font-bold">Low Data Mode</div>
+                    <div className="font-bold">{t.lowData}</div>
                     <div className="text-[10px] text-slate-500 font-black uppercase">Fewer images, less data</div>
                   </div>
                 </div>
@@ -230,7 +276,7 @@ const SettingsView: React.FC<Props> = ({
                 <ShieldCheck size={24} />
               </div>
               <div>
-                <h2 className="text-2xl font-bold">Data & Security</h2>
+                <h2 className="text-2xl font-bold">{t.dataSecurity}</h2>
                 <p className="text-slate-500 text-sm">Manage your personal information</p>
               </div>
             </div>
@@ -243,8 +289,8 @@ const SettingsView: React.FC<Props> = ({
                 <div className="flex items-center gap-4">
                   <DownloadCloud size={20} className="text-green-600" />
                   <div className="text-left">
-                    <div className="font-bold">Export Account Data</div>
-                    <div className="text-[10px] text-slate-500 font-black uppercase">Download backup (JSON)</div>
+                    <div className="font-bold">{t.exportData}</div>
+                    <div className="text-[10px] text-slate-500 font-black uppercase">{t.downloadBackup} (JSON)</div>
                   </div>
                 </div>
                 <Check size={18} className="text-slate-300" />
@@ -253,7 +299,7 @@ const SettingsView: React.FC<Props> = ({
               <div className="p-5 rounded-3xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800 flex items-start gap-4">
                 <Smartphone size={20} className="text-amber-600 shrink-0 mt-1" />
                 <div>
-                  <div className="font-bold text-amber-900 dark:text-amber-200 text-sm">SMS Offline Mode</div>
+                  <div className="font-bold text-amber-900 dark:text-amber-200 text-sm">{t.smsOffline}</div>
                   <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed font-medium">
                     Dial <span className="font-black bg-amber-200 dark:bg-amber-800 px-1 rounded">*789#</span> to access core features without internet. This uses our USSD gateway.
                   </p>
@@ -274,3 +320,4 @@ const SettingsView: React.FC<Props> = ({
 };
 
 export default SettingsView;
+

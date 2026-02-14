@@ -6,6 +6,7 @@ export interface User {
   name: string;
   location: string;
   role: 'farmer' | 'buyer' | 'extension-officer';
+  profileImage?: string;
 }
 
 export interface WeatherData {
@@ -43,6 +44,7 @@ export interface MarketplaceListing {
   id: string;
   userId: string;
   userName: string;
+  userProfileImage?: string;
   title: string;
   description: string;
   price: string;

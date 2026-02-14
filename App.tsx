@@ -23,7 +23,8 @@ import {
   BellRing,
   Cloud,
   CloudOff,
-  RefreshCcw
+  RefreshCcw,
+  Check
 } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -159,19 +160,25 @@ const App: React.FC = () => {
                 className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all ${activeTab === item.id ? 'bg-green-600 text-white shadow-xl shadow-green-600/20' : darkMode ? 'hover:bg-slate-700/50 text-slate-400' : 'hover:bg-slate-100 text-slate-600'}`}
               >
                 <item.icon size={22} strokeWidth={activeTab === item.id ? 2.5 : 2} />
-                <span className="font-black tracking-tight">{item.label}</span>
+                <span className="font-black tracking-tight">{(t as any)[item.id] || item.label}</span>
               </button>
             ))}
           </nav>
           <div className="p-6 border-t border-slate-200 dark:border-slate-700">
             {user && (
-              <div className="mb-4 flex items-center gap-3 px-2">
-                <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center font-black text-green-600 border border-slate-200 dark:border-slate-600 uppercase">
-                  {user.name.charAt(0)}
+              <div className="flex items-center gap-4 mb-6 p-4 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
+                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-xl font-black text-green-600 shadow-inner shrink-0">
+                  {user.profileImage ? (
+                    <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
+                  ) : (
+                    user.name.charAt(0)
+                  )}
                 </div>
                 <div className="overflow-hidden">
-                  <p className="font-bold text-sm truncate">{user.name}</p>
-                  <p className="text-[10px] text-slate-500 font-bold uppercase truncate">{user.location}</p>
+                  <h3 className="font-black text-slate-800 dark:text-white truncate text-sm">{user.name}</h3>
+                  <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                    Verified {user.role} <Check size={10} className="text-green-600" />
+                  </p>
                 </div>
               </div>
             )}
@@ -180,7 +187,7 @@ const App: React.FC = () => {
             </button>
           </div>
         </div>
-      </aside>
+      </aside >
 
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <header className={`h-20 flex items-center justify-between px-8 sticky top-0 z-30 border-b backdrop-blur-xl ${darkMode ? 'bg-slate-900/80 border-slate-700' : 'bg-white/80 border-slate-200'}`}>
@@ -247,7 +254,7 @@ const App: React.FC = () => {
           <span className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full border-4 border-white dark:border-slate-900 animate-ping" />
         </button>
       </main>
-    </div>
+    </div >
   );
 };
 
