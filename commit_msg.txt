@@ -1,7 +1,5 @@
-Implement real Dexie Cloud authentication and sync status visualization
+Fix logout reliability and session management
 
-- Replaced mock Auth with real Email OTP flow using Dexie Cloud.
-- Updated App.tsx to use useObservable for real-time cloud and sync states.
-- Added cloud connection status indicators (Cloud/Refresh icons).
-- Enforced requireAuth: true in database configuration.
-- Installed dexie-react-hooks for efficient state observation.
+- Implemented an explicit handleLogout function with window.location reload.
+- Added a loading screen during Dexie Cloud user initialization.
+- Replaced direct db.cloud.logout() call with the more robust handleLogout.

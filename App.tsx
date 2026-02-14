@@ -39,9 +39,22 @@ const App: React.FC = () => {
   const currentUser = useObservable(db.cloud.currentUser);
   const syncState = useObservable(db.cloud.syncState);
 
+  // Explicit logout handler
+  const handleLogout = async () => {
+    try {
+      await db.cloud.logout();
+      // Direct reload to clear any remaining in-memory states and force Auth re-init
+      window.location.href = window.location.origin;
+    } catch (err) {
+      console.error("Logout failed:", err);
+      // Fallback: reload anyway
+      window.location.reload();
+    }
+  };
+
   // Map Dexie Cloud user to our User type
   const user: User | null = useMemo(() => {
-    if (!currentUser || currentUser.isLoggedIn === false) return null;
+    if (!currentUser || !currentUser.isLoggedIn) return null;
     return {
       id: currentUser.userId || 'unknown',
       name: (currentUser as any).name || currentUser.email || 'Farmer',
@@ -80,7 +93,19 @@ const App: React.FC = () => {
     };
   }, []);
 
-  if (!currentUser || currentUser.isLoggedIn === false) {
+  // Handle loading state
+  if (currentUser === undefined) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="flex flex-col items-center gap-4">
+          <RefreshCcw className="w-8 h-8 text-green-600 animate-spin" />
+          <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Initializing Hub...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentUser.isLoggedIn === false) {
     return <Auth lang={lang} t={t} />;
   }
 
@@ -150,7 +175,7 @@ const App: React.FC = () => {
                 </div>
               </div>
             )}
-            <button onClick={() => db.cloud.logout()} className="w-full flex items-center gap-3 px-5 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-2xl transition-all font-bold text-sm">
+            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-5 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-2xl transition-all font-bold text-sm">
               <LogOut size={18} /> Logout
             </button>
           </div>
