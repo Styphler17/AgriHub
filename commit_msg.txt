@@ -1,7 +1,6 @@
-Enhance Marketplace: Add Editing, Fix UI Overlaps, and Remove Mocks
+Fix Marketplace UI Overflows, Real Name Display, and Cleanup
 
-- Implemented full Edit/Update functionality for marketplace listings.
-- Improved 'handlePost' to handle both additions and modifications.
-- Reduced action button sizes (Pencil, Trash, Message) in listing cards to prevent overlaps and improve layout.
-- Removed all hardcoded 'MOCK_LISTINGS' from 'App.tsx' and 'Marketplace.tsx' to ensure a real data-only state.
-- Refined price formatting logic to handle currency symbol stripping more robustly during edits.
+- Updated Marketplace.tsx to use the synced user profile for real name display on listings.
+- Improved the listing card layout with 'truncate', 'min-w-0', and 'shrink-0' to prevent buttons and names from overflowing.
+- Added a one-time cleanup script in App.tsx to remove lingering mock listings (Kojo Asante, etc.) from the database.
+- Passed the 'user' prop from App.tsx to Marketplace to ensure profile data consistency.

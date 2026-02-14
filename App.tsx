@@ -100,6 +100,10 @@ const App: React.FC = () => {
       if (priceCount === 0) {
         await db.prices.bulkPut(MOCK_PRICES);
       }
+
+      // Cleanup hardcoded items if they exist from previous sessions
+      const mockIds = ['1', '2', '3'];
+      await db.listings.where('id').anyOf(mockIds).delete();
     };
     initDb();
 
@@ -245,7 +249,7 @@ const App: React.FC = () => {
           {activeTab === 'dashboard' && <Dashboard lang={lang} t={t} darkMode={darkMode} isOnline={isOnline} onNavigate={setActiveTab} />}
           {activeTab === 'advice' && <CropAdvisor lang={lang} t={t} darkMode={darkMode} />}
           {activeTab === 'prices' && <MarketPrices lang={lang} t={t} darkMode={darkMode} isOnline={isOnline} />}
-          {activeTab === 'marketplace' && <Marketplace lang={lang} t={t} darkMode={darkMode} />}
+          {activeTab === 'marketplace' && <Marketplace lang={lang} t={t} darkMode={darkMode} user={user} />}
           {activeTab === 'settings' && user && (
             <SettingsView
               user={user}

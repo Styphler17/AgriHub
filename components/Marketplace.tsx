@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useObservable } from 'dexie-react-hooks';
-import { MarketplaceListing } from '../types';
+import { MarketplaceListing, User } from '../types';
 import { db } from '../db';
 import { ShoppingBag, Search, Plus, MessageCircle, MapPin, Tag, X, User as UserIcon, Check, Map as MapIcon, List, Trash2, Pencil } from 'lucide-react';
 
@@ -8,9 +8,10 @@ interface Props {
   lang: string;
   t: any;
   darkMode: boolean;
+  user: User | null;
 }
 
-const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
+const Marketplace: React.FC<Props> = ({ lang, t, darkMode, user }) => {
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
   const [activeType, setActiveType] = useState<'all' | 'sale' | 'wanted'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
@@ -18,8 +19,6 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-
-  const currentUser = useObservable(db.cloud.currentUser);
 
   const [newListing, setNewListing] = useState({
     title: '',
@@ -79,9 +78,9 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
         ...newListing,
         price: finalPrice,
         id: Math.random().toString(36).substr(2, 9),
-        userId: currentUser?.userId || 'anonymous',
-        userName: (currentUser as any)?.name || currentUser?.email || 'Farmer',
-        userProfileImage: (currentUser as any)?.profileImage,
+        userId: user?.id || 'anonymous',
+        userName: user?.name || 'Farmer',
+        userProfileImage: user?.profileImage,
       };
       await db.listings.add(listing);
     }
@@ -168,22 +167,22 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
                 <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   <Tag size={14} className="text-green-600" /> {item.category}
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-lg font-black text-green-600 border border-slate-200 dark:border-slate-600 shadow-inner">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-lg font-black text-green-600 border border-slate-200 dark:border-slate-600 shadow-inner shrink-0">
                       {item.userProfileImage ? (
                         <img src={item.userProfileImage} alt={item.userName} className="w-full h-full object-cover" />
                       ) : (
                         item.userName.charAt(0)
                       )}
                     </div>
-                    <div>
-                      <div className="text-sm font-black">{item.userName}</div>
-                      <div className="text-[10px] text-slate-400 font-bold flex items-center gap-1 uppercase tracking-tighter">Verified Farmer <Check size={10} className="text-green-600" /></div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-black truncate">{item.userName}</div>
+                      <div className="text-[10px] text-slate-400 font-bold flex items-center gap-1 uppercase tracking-tighter whitespace-nowrap">Farmer <Check size={10} className="text-green-600" /></div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    {item.userId === currentUser?.userId && (
+                  <div className="flex gap-2 shrink-0">
+                    {item.userId === user?.id && (
                       <>
                         <button
                           onClick={() => handleEdit(item)}
