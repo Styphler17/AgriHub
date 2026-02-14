@@ -1,7 +1,8 @@
-Implement Functional Supply Chain Intelligence Dashboard
+Redesign Market Prices & Implement Admin Price Editor
 
-- Transformed the static map placeholder into a dynamic "Supply Chain Intelligence" dashboard.
-- Implemented real-time regional "Hotzones" visualization that calculates listing counts per region dynamically.
-- Added interactive regional badges in the map view that act as functional filters.
-- Integrated "Pro Insights" logic that highlights supply clusters and suggests logistics optimizations.
-- Improved the overall UI/UX of the map view with modern aesthetics and responsive data visualization.
+- Overhauled Market Prices UI with a premium dashboard aesthetic and live area charts.
+- Integrated Dexie live queries for real-time price synchronization across the app.
+- Implemented an in-app Price Editor for Administrators (Extension Officers) to update market rates directly.
+- Automated trend detection (Up/Down/Stable) based on price changes.
+- Restored and optimized PDF/CSV data export functionalities.
+- Enhanced regional filtering and sorting for better commodity discovery.

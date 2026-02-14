@@ -259,7 +259,7 @@ const App: React.FC = () => {
         <div className="flex-1 overflow-y-auto p-6 lg:p-10 max-w-7xl mx-auto w-full custom-scrollbar">
           {activeTab === 'dashboard' && <Dashboard lang={lang} t={t} darkMode={darkMode} isOnline={isOnline} onNavigate={setActiveTab} />}
           {activeTab === 'advice' && <CropAdvisor lang={lang} t={t} darkMode={darkMode} />}
-          {activeTab === 'prices' && <MarketPrices lang={lang} t={t} darkMode={darkMode} isOnline={isOnline} />}
+          {activeTab === 'prices' && <MarketPrices lang={lang} t={t} darkMode={darkMode} isOnline={isOnline} user={user} />}
           {activeTab === 'marketplace' && <Marketplace lang={lang} t={t} darkMode={darkMode} user={user} />}
           {activeTab === 'settings' && user && (
             <SettingsView
