@@ -1,8 +1,7 @@
-Redesign Market Prices & Implement Admin Price Editor
+Implement Administrative Role Protection
 
-- Overhauled Market Prices UI with a premium dashboard aesthetic and live area charts.
-- Integrated Dexie live queries for real-time price synchronization across the app.
-- Implemented an in-app Price Editor for Administrators (Extension Officers) to update market rates directly.
-- Automated trend detection (Up/Down/Stable) based on price changes.
-- Restored and optimized PDF/CSV data export functionalities.
-- Enhanced regional filtering and sorting for better commodity discovery.
+- Restricted the "Extension Officer" role in Settings.
+- Added a mandatory verification key requirement for role elevation.
+- Implemented dynamic UI gating for administrative credentials.
+- Added error handling and visual feedback for unauthorized role changes.
+- Key fixed: AGRI-OFFICER-2024.

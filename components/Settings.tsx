@@ -14,7 +14,8 @@ import {
   DownloadCloud,
   ShieldCheck,
   Camera,
-  Upload
+  Upload,
+  Lock
 } from 'lucide-react';
 
 interface Props {
@@ -45,13 +46,26 @@ const SettingsView: React.FC<Props> = ({
   const [phone, setPhone] = useState(user.phoneNumber || '');
   const [role, setRole] = useState(user.role);
   const [profileImage, setProfileImage] = useState(user.profileImage || '');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [authError, setAuthError] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
+    setAuthError(null);
+
+    // Role protection logic
+    if (role === 'extension-officer' && user.role !== 'extension-officer') {
+      if (verificationCode !== 'AGRI-OFFICER-2024') {
+        setAuthError('Invalid Verification Key. Promotion to Extension Officer denied.');
+        return;
+      }
+    }
+
     setUser({ ...user, name, location, role, profileImage, phoneNumber: phone });
     setIsSaved(true);
+    setVerificationCode('');
     setTimeout(() => setIsSaved(false), 2000);
   };
 
@@ -195,7 +209,33 @@ const SettingsView: React.FC<Props> = ({
                   </select>
                 </div>
               </div>
+
+              {role === 'extension-officer' && user.role !== 'extension-officer' && (
+                <div className="space-y-2 sm:col-span-2 animate-in slide-in-from-top-4 duration-300">
+                  <label className="text-xs font-black text-amber-600 uppercase tracking-widest ml-1 flex items-center gap-2">
+                    <ShieldCheck size={14} /> Official Verification Key Required
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500" size={18} />
+                    <input
+                      required
+                      type="password"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value)}
+                      className={`w-full pl-12 pr-4 py-4 rounded-2xl border-2 outline-none transition-all ${darkMode ? 'bg-slate-900 border-amber-500/30 focus:border-amber-500 text-white' : 'bg-amber-50 border-amber-100 focus:border-amber-500'
+                        }`}
+                      placeholder="Enter official key"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
+
+            {authError && (
+              <div className="p-4 bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 text-red-600 dark:text-red-400 text-xs font-bold rounded-2xl flex items-center gap-2 animate-shake">
+                <Smartphone size={16} /> {authError}
+              </div>
+            )}
 
             <button
               type="submit"
