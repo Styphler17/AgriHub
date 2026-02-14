@@ -9,10 +9,10 @@ export class AgriHubDB extends Dexie {
 
   constructor() {
     super('AgriHubDB', { addons: [dexieCloud] });
-    this.version(1).stores({
-      prices: '++id, commodity, location',
+    this.version(2).stores({
+      prices: 'id, commodity, location',
       weather: 'city',
-      listings: '++id, category, type'
+      listings: 'id, category, type'
     });
 
     this.cloud.configure({

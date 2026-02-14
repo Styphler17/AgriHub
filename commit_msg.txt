@@ -1,5 +1,6 @@
-Fix logout reliability and session management
+Resolve Dexie Cloud SchemaError and improve data ownership
 
-- Implemented an explicit handleLogout function with window.location reload.
-- Added a loading screen during Dexie Cloud user initialization.
-- Replaced direct db.cloud.logout() call with the more robust handleLogout.
+- Removed ++id from synced tables (prices, listings) to resolve SchemaError.
+- Incremented DB version to 2 to trigger schema migration.
+- Updated Marketplace component to use the authenticated user's real ID and Name for new postings.
+- Introduced useObservable in Marketplace to track current user context.

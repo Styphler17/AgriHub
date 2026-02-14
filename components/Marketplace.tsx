@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { useObservable } from 'dexie-react-hooks';
 import { MarketplaceListing } from '../types';
 import { db } from '../db';
 import { ShoppingBag, Search, Plus, MessageCircle, MapPin, Tag, X, User as UserIcon, Check, Map as MapIcon, List } from 'lucide-react';
@@ -22,7 +22,9 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
   const [showPostModal, setShowPostModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  
+
+  const currentUser = useObservable(db.cloud.currentUser);
+
   const [newListing, setNewListing] = useState({
     title: '',
     description: '',
@@ -46,8 +48,8 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
     const listing: MarketplaceListing = {
       ...newListing,
       id: Math.random().toString(36).substr(2, 9),
-      userId: 'currentUser',
-      userName: 'You',
+      userId: currentUser?.userId || 'anonymous',
+      userName: (currentUser as any)?.name || currentUser?.email || 'Farmer',
     };
     await db.listings.add(listing);
     setListings([listing, ...listings]);
@@ -57,8 +59,8 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
 
   const filtered = listings.filter(l => {
     const matchesType = activeType === 'all' || l.type === activeType;
-    const matchesSearch = l.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          l.category.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = l.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      l.category.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesType && matchesSearch;
   });
 
@@ -71,21 +73,20 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
               <button
                 key={type}
                 onClick={() => setActiveType(type as any)}
-                className={`px-6 py-2 rounded-xl text-xs font-black capitalize transition-all ${
-                  activeType === type ? 'bg-white dark:bg-slate-700 shadow-xl text-green-600' : 'text-slate-500'
-                }`}
+                className={`px-6 py-2 rounded-xl text-xs font-black capitalize transition-all ${activeType === type ? 'bg-white dark:bg-slate-700 shadow-xl text-green-600' : 'text-slate-500'
+                  }`}
               >
                 {type === 'all' ? 'All' : type === 'sale' ? 'Sale' : 'Wanted'}
               </button>
             ))}
           </div>
           <div className="flex bg-slate-200 dark:bg-slate-800 p-1 rounded-2xl shadow-inner">
-            <button onClick={() => setViewMode('grid')} className={`p-2 rounded-xl ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-green-600' : 'text-slate-500'}`}><List size={20}/></button>
-            <button onClick={() => setViewMode('map')} className={`p-2 rounded-xl ${viewMode === 'map' ? 'bg-white dark:bg-slate-700 text-green-600' : 'text-slate-500'}`}><MapIcon size={20}/></button>
+            <button onClick={() => setViewMode('grid')} className={`p-2 rounded-xl ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 text-green-600' : 'text-slate-500'}`}><List size={20} /></button>
+            <button onClick={() => setViewMode('map')} className={`p-2 rounded-xl ${viewMode === 'map' ? 'bg-white dark:bg-slate-700 text-green-600' : 'text-slate-500'}`}><MapIcon size={20} /></button>
           </div>
         </div>
-        
-        <button 
+
+        <button
           onClick={() => setShowPostModal(true)}
           className="w-full xl:w-auto bg-green-600 hover:bg-green-700 text-white font-black px-8 py-4 rounded-2xl shadow-2xl shadow-green-600/30 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all"
         >
@@ -96,21 +97,19 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
       {viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filtered.map(item => (
-            <div 
+            <div
               key={item.id}
-              className={`group flex flex-col p-8 rounded-[2.5rem] border transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] ${
-                darkMode ? 'bg-slate-800 border-slate-700 hover:border-slate-500' : 'bg-white border-slate-100 hover:border-slate-300 shadow-sm'
-              }`}
+              className={`group flex flex-col p-8 rounded-[2.5rem] border transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] ${darkMode ? 'bg-slate-800 border-slate-700 hover:border-slate-500' : 'bg-white border-slate-100 hover:border-slate-300 shadow-sm'
+                }`}
             >
               <div className="flex justify-between items-start mb-6">
-                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.1em] ${
-                  item.type === 'sale' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
-                }`}>
+                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.1em] ${item.type === 'sale' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                  }`}>
                   {item.type}
                 </span>
                 <div className="text-green-600 font-black text-2xl tracking-tighter">{item.price}</div>
               </div>
-              
+
               <h3 className="text-2xl font-black mb-3 leading-tight line-clamp-2 group-hover:text-green-600 transition-colors">{item.title}</h3>
               <p className={`text-sm mb-6 line-clamp-3 font-medium flex-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                 {item.description}
@@ -130,7 +129,7 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
                       <div className="text-[10px] text-slate-400 font-bold flex items-center gap-1 uppercase tracking-tighter">Verified Farmer <Check size={10} className="text-green-600" /></div>
                     </div>
                   </div>
-                  <button 
+                  <button
                     onClick={() => window.open(`tel:${item.contact}`)}
                     className="bg-green-600 text-white p-4 rounded-2xl shadow-xl shadow-green-600/20 hover:bg-green-700 active:scale-90 transition-all"
                     aria-label="Contact seller"
@@ -145,7 +144,7 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
       ) : (
         <div className={`w-full aspect-video rounded-[3rem] border-4 border-dashed flex flex-col items-center justify-center text-center p-10 ${darkMode ? 'bg-slate-800 border-slate-700 text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
           <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-6">
-             <MapIcon size={48} />
+            <MapIcon size={48} />
           </div>
           <h3 className="text-2xl font-black">Interactive Supply Chain Map</h3>
           <p className="max-w-md mt-2 font-medium">Visualizing {filtered.length} active listings across Kumasi, Accra, and Tamale. Upgrade to Pro for real-time logistics tracking.</p>
@@ -169,26 +168,26 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
               <h3 className="text-3xl font-black">New Listing</h3>
               <p className="text-slate-500 text-sm mt-2">Connect with buyers and sellers in your region.</p>
             </div>
-            
+
             <form onSubmit={handlePost} className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
-                <button type="button" onClick={() => setNewListing({...newListing, type: 'sale'})} className={`py-4 rounded-2xl font-black text-sm transition-all border-4 ${newListing.type === 'sale' ? 'bg-green-600 text-white border-green-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-transparent'}`}>Selling</button>
-                <button type="button" onClick={() => setNewListing({...newListing, type: 'wanted'})} className={`py-4 rounded-2xl font-black text-sm transition-all border-4 ${newListing.type === 'wanted' ? 'bg-amber-500 text-white border-amber-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-transparent'}`}>Wanted</button>
+                <button type="button" onClick={() => setNewListing({ ...newListing, type: 'sale' })} className={`py-4 rounded-2xl font-black text-sm transition-all border-4 ${newListing.type === 'sale' ? 'bg-green-600 text-white border-green-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-transparent'}`}>Selling</button>
+                <button type="button" onClick={() => setNewListing({ ...newListing, type: 'wanted' })} className={`py-4 rounded-2xl font-black text-sm transition-all border-4 ${newListing.type === 'wanted' ? 'bg-amber-500 text-white border-amber-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-transparent'}`}>Wanted</button>
               </div>
-              
+
               <div className="space-y-2">
                 <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Title</label>
-                <input required value={newListing.title} onChange={e => setNewListing({...newListing, title: e.target.value})} className={`w-full px-6 py-4 rounded-2xl border-2 outline-none ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`} placeholder="e.g. 100 Tubers of Pona Yam" />
+                <input required value={newListing.title} onChange={e => setNewListing({ ...newListing, title: e.target.value })} className={`w-full px-6 py-4 rounded-2xl border-2 outline-none ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`} placeholder="e.g. 100 Tubers of Pona Yam" />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Price</label>
-                  <input required value={newListing.price} onChange={e => setNewListing({...newListing, price: e.target.value})} className={`w-full px-6 py-4 rounded-2xl border-2 outline-none ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`} placeholder="₵500 total" />
+                  <input required value={newListing.price} onChange={e => setNewListing({ ...newListing, price: e.target.value })} className={`w-full px-6 py-4 rounded-2xl border-2 outline-none ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`} placeholder="₵500 total" />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
-                  <select value={newListing.category} onChange={e => setNewListing({...newListing, category: e.target.value})} className={`w-full px-6 py-4 rounded-2xl border-2 outline-none appearance-none ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`}>
+                  <select value={newListing.category} onChange={e => setNewListing({ ...newListing, category: e.target.value })} className={`w-full px-6 py-4 rounded-2xl border-2 outline-none appearance-none ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`}>
                     <option>Grain</option>
                     <option>Roots</option>
                     <option>Tubers</option>
@@ -200,28 +199,27 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
 
               <div className="space-y-2">
                 <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Description</label>
-                <textarea required rows={3} value={newListing.description} onChange={e => setNewListing({...newListing, description: e.target.value})} className={`w-full px-6 py-4 rounded-2xl border-2 outline-none resize-none ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`} placeholder="Provide details about quality, location, etc." />
+                <textarea required rows={3} value={newListing.description} onChange={e => setNewListing({ ...newListing, description: e.target.value })} className={`w-full px-6 py-4 rounded-2xl border-2 outline-none resize-none ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`} placeholder="Provide details about quality, location, etc." />
               </div>
 
               <div className="space-y-2">
                 <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Contact Number</label>
-                <input required value={newListing.contact} onChange={e => setNewListing({...newListing, contact: e.target.value})} className={`w-full px-6 py-4 rounded-2xl border-2 outline-none ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`} placeholder="024 XXX XXXX" />
+                <input required value={newListing.contact} onChange={e => setNewListing({ ...newListing, contact: e.target.value })} className={`w-full px-6 py-4 rounded-2xl border-2 outline-none ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`} placeholder="024 XXX XXXX" />
               </div>
 
               <div className="flex gap-4 pt-4">
-                <button 
-                  type="button" 
-                  onClick={() => setShowPostModal(false)} 
-                  className={`flex-1 py-5 rounded-[1.5rem] font-black text-xl transition-all ${
-                    darkMode 
-                      ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' 
-                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                  }`}
+                <button
+                  type="button"
+                  onClick={() => setShowPostModal(false)}
+                  className={`flex-1 py-5 rounded-[1.5rem] font-black text-xl transition-all ${darkMode
+                    ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                    }`}
                 >
                   Cancel
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="flex-[2] py-5 bg-green-600 text-white rounded-[1.5rem] font-black text-xl shadow-2xl shadow-green-600/30 hover:bg-green-700 hover:scale-[1.02] active:scale-95 transition-all"
                 >
                   Post to Market
