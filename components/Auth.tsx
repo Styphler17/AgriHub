@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sprout, Mail, Lock, LogIn, Loader2, ArrowLeft } from 'lucide-react';
+import { Sprout, Mail, Lock, LogIn, Loader2, ArrowLeft, Smartphone } from 'lucide-react';
 import { db } from '../db';
 
 interface Props {
@@ -11,6 +11,7 @@ const Auth: React.FC<Props> = ({ lang, t }) => {
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [loading, setLoading] = useState(false);
@@ -50,6 +51,7 @@ const Auth: React.FC<Props> = ({ lang, t }) => {
           id: userId,
           name: fullName,
           location: 'Ghana',
+          phoneNumber: phoneNumber,
           role: 'farmer'
         });
       }
@@ -104,6 +106,21 @@ const Auth: React.FC<Props> = ({ lang, t }) => {
                     onChange={(e) => setLastName(e.target.value)}
                     className="w-full px-6 py-4 bg-slate-50 border-2 border-transparent focus:border-green-600 focus:bg-white rounded-[1.2rem] transition-all outline-none font-bold text-slate-700"
                     placeholder="Asante"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
+                <div className="relative">
+                  <Smartphone className={`absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${phoneNumber ? 'text-green-600' : 'text-slate-400'}`} size={20} />
+                  <input
+                    required
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="w-full pl-12 pr-4 py-5 bg-slate-50 border-2 border-transparent focus:border-green-600 focus:bg-white rounded-[1.5rem] transition-all outline-none font-bold text-slate-700"
+                    placeholder="024 XXX XXXX"
                   />
                 </div>
               </div>

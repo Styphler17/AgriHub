@@ -1,6 +1,7 @@
-Synchronize Names and Improve Account Creation
+Redesign Marketplace Form and Add Phone Number Integration
 
-- Refactored Auth.tsx to collect First and Last names during signup, automatically creating a user profile on successful login.
-- Modified handleUpdateUser in App.tsx to propagate name and profile image changes to all of a user's marketplace listings.
-- Improved data consistency and personalization across the app.
-- Added automatic cleanup of hardcoded mock listings on startup.
+- Updated User type and Auth flow to collect and persist user phone numbers.
+- Implemented automatic contact number pre-filling in the Marketplace listing form based on the user's profile.
+- Completely redesigned the Marketplace post modal with a responsive two-column layout and modern styling (max-w-4xl).
+- Integrated phone number management into the Settings view.
+- Improved overall form usability and visual hierarchy across the application.

@@ -42,6 +42,7 @@ const SettingsView: React.FC<Props> = ({
 }) => {
   const [name, setName] = useState(user.name);
   const [location, setLocation] = useState(user.location);
+  const [phone, setPhone] = useState(user.phoneNumber || '');
   const [role, setRole] = useState(user.role);
   const [profileImage, setProfileImage] = useState(user.profileImage || '');
   const [isSaved, setIsSaved] = useState(false);
@@ -49,7 +50,7 @@ const SettingsView: React.FC<Props> = ({
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    setUser({ ...user, name, location, role, profileImage });
+    setUser({ ...user, name, location, role, profileImage, phoneNumber: phone });
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
   };
@@ -158,7 +159,22 @@ const SettingsView: React.FC<Props> = ({
                     onChange={(e) => setLocation(e.target.value)}
                     className={`w-full pl-12 pr-4 py-4 rounded-2xl border-2 outline-none transition-all ${darkMode ? 'bg-slate-900 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'
                       }`}
-                    placeholder="e.g. Kumasi, Ashanti"
+                    placeholder="Location"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
+                <div className="relative">
+                  <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className={`w-full pl-12 pr-4 py-4 rounded-2xl border-2 outline-none transition-all ${darkMode ? 'bg-slate-900 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'
+                      }`}
+                    placeholder="024 XXX XXXX"
                   />
                 </div>
               </div>

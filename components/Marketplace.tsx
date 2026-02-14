@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useObservable } from 'dexie-react-hooks';
 import { MarketplaceListing, User } from '../types';
 import { db } from '../db';
-import { ShoppingBag, Search, Plus, MessageCircle, MapPin, Tag, X, User as UserIcon, Check, Map as MapIcon, List, Trash2, Pencil } from 'lucide-react';
+import { ShoppingBag, Search, Plus, MessageCircle, MapPin, Tag, X, User as UserIcon, Check, Map as MapIcon, List, Trash2, Pencil, Smartphone } from 'lucide-react';
 
 interface Props {
   lang: string;
@@ -57,6 +57,20 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode, user }) => {
     });
     setEditingId(item.id);
     setIsEditing(true);
+    setShowPostModal(true);
+  };
+
+  const handleShowPostModal = () => {
+    if (!isEditing) {
+      setNewListing({
+        title: '',
+        description: '',
+        price: '',
+        type: 'sale',
+        category: 'Grain',
+        contact: user?.phoneNumber || ''
+      });
+    }
     setShowPostModal(true);
   };
 
@@ -122,7 +136,7 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode, user }) => {
         </div>
 
         <button
-          onClick={() => setShowPostModal(true)}
+          onClick={handleShowPostModal}
           className="w-full xl:w-auto bg-green-600 hover:bg-green-700 text-white font-black px-8 py-4 rounded-2xl shadow-2xl shadow-green-600/30 flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all"
         >
           <Plus size={24} strokeWidth={3} /> Post New Listing
@@ -229,81 +243,92 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode, user }) => {
 
       {showPostModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
-          <div className={`w-full max-w-lg p-10 rounded-[3rem] shadow-2xl relative animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar ${darkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white'}`}>
+          <div className={`w-full max-w-4xl p-10 rounded-[3rem] shadow-2xl relative animate-in zoom-in duration-300 max-h-[95vh] overflow-y-auto custom-scrollbar ${darkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white'}`}>
             <button onClick={() => { setShowPostModal(false); setIsEditing(false); setEditingId(null); }} className="absolute top-8 right-8 text-slate-400 hover:text-slate-600 transition-colors">
               <X size={32} />
             </button>
             <div className="flex flex-col items-center text-center mb-10">
-              <div className="w-20 h-20 bg-green-100 text-green-600 rounded-[2rem] flex items-center justify-center mb-6 shadow-inner">
+              <div className="w-20 h-20 bg-green-100 text-green-600 rounded-[2rem] flex items-center justify-center mb-6 shadow-inner ring-8 ring-green-50/50">
                 {isEditing ? <Pencil size={40} /> : <ShoppingBag size={40} />}
               </div>
-              <h3 className="text-3xl font-black">{isEditing ? 'Edit Your Listing' : 'New Listing'}</h3>
-              <p className="text-slate-500 text-sm mt-2">{isEditing ? 'Make changes to your active post.' : 'Connect with buyers and sellers in your region.'}</p>
+              <h3 className="text-4xl font-black tracking-tighter">{isEditing ? 'Update Your Listing' : 'Post to Marketplace'}</h3>
+              <p className="text-slate-500 font-medium mt-2">{isEditing ? 'Make changes to your active post.' : 'Reach thousands of buyers across the region.'}</p>
             </div>
 
-            <form onSubmit={handlePost} className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <button type="button" onClick={() => setNewListing({ ...newListing, type: 'sale' })} className={`py-4 rounded-2xl font-black text-sm transition-all border-4 ${newListing.type === 'sale' ? 'bg-green-600 text-white border-green-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-transparent'}`}>Selling</button>
-                <button type="button" onClick={() => setNewListing({ ...newListing, type: 'wanted' })} className={`py-4 rounded-2xl font-black text-sm transition-all border-4 ${newListing.type === 'wanted' ? 'bg-amber-500 text-white border-amber-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-transparent'}`}>Wanted</button>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Title</label>
-                <input required value={newListing.title} onChange={e => setNewListing({ ...newListing, title: e.target.value })} className={`w-full px-6 py-4 rounded-2xl border-2 outline-none ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`} placeholder="e.g. 100 Tubers of Pona Yam" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handlePost} className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+              <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Price</label>
-                  <div className="relative">
-                    <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-green-600">GH₵</span>
-                    <input
-                      required
-                      value={newListing.price}
-                      onChange={e => setNewListing({ ...newListing, price: e.target.value })}
-                      className={`w-full pl-16 pr-6 py-4 rounded-2xl border-2 outline-none ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`}
-                      placeholder="500 total"
-                    />
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Listing Type</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button type="button" onClick={() => setNewListing({ ...newListing, type: 'sale' })} className={`py-4 rounded-2xl font-black text-sm transition-all border-2 ${newListing.type === 'sale' ? 'bg-green-600 text-white border-green-400 shadow-lg shadow-green-600/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-transparent'}`}>Selling</button>
+                    <button type="button" onClick={() => setNewListing({ ...newListing, type: 'wanted' })} className={`py-4 rounded-2xl font-black text-sm transition-all border-2 ${newListing.type === 'wanted' ? 'bg-amber-500 text-white border-amber-300 shadow-lg shadow-amber-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-transparent'}`}>Wanted</button>
                   </div>
                 </div>
+
                 <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
-                  <select value={newListing.category} onChange={e => setNewListing({ ...newListing, category: e.target.value })} className={`w-full px-6 py-4 rounded-2xl border-2 outline-none appearance-none ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`}>
-                    <option>Grain</option>
-                    <option>Roots</option>
-                    <option>Tubers</option>
-                    <option>Inputs</option>
-                    <option>Equipment</option>
-                  </select>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Produce/Item Title</label>
+                  <input required value={newListing.title} onChange={e => setNewListing({ ...newListing, title: e.target.value })} className={`w-full px-6 py-5 rounded-[1.5rem] border-2 outline-none font-bold text-lg transition-all ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`} placeholder="e.g. 50 Bags of Organic Maize" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target Price</label>
+                    <div className="relative">
+                      <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-green-600">GH₵</span>
+                      <input
+                        required
+                        value={newListing.price}
+                        onChange={e => setNewListing({ ...newListing, price: e.target.value })}
+                        className={`w-full pl-16 pr-6 py-5 rounded-[1.5rem] border-2 outline-none font-black text-lg ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`}
+                        placeholder="500"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
+                    <select value={newListing.category} onChange={e => setNewListing({ ...newListing, category: e.target.value })} className={`w-full px-6 py-5 rounded-[1.5rem] border-2 outline-none appearance-none font-bold text-lg ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`}>
+                      <option>Grain</option>
+                      <option>Roots</option>
+                      <option>Tubers</option>
+                      <option>Inputs</option>
+                      <option>Equipment</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Description</label>
-                <textarea required rows={3} value={newListing.description} onChange={e => setNewListing({ ...newListing, description: e.target.value })} className={`w-full px-6 py-4 rounded-2xl border-2 outline-none resize-none ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`} placeholder="Provide details about quality, location, etc." />
-              </div>
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Detailed Description</label>
+                  <textarea required rows={5} value={newListing.description} onChange={e => setNewListing({ ...newListing, description: e.target.value })} className={`w-full px-6 py-5 rounded-[1.5rem] border-2 outline-none resize-none font-medium text-lg leading-relaxed ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`} placeholder="Describe quality, variety, and specifics..." />
+                </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Contact Number</label>
-                <input required value={newListing.contact} onChange={e => setNewListing({ ...newListing, contact: e.target.value })} className={`w-full px-6 py-4 rounded-2xl border-2 outline-none ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`} placeholder="024 XXX XXXX" />
-              </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Direct Contact Number</label>
+                  <div className="relative">
+                    <Smartphone className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={24} />
+                    <input required value={newListing.contact} onChange={e => setNewListing({ ...newListing, contact: e.target.value })} className={`w-full pl-16 pr-6 py-5 rounded-[1.5rem] border-2 outline-none font-black text-lg ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`} placeholder="024 XXX XXXX" />
+                  </div>
+                </div>
 
-              <div className="flex gap-4 pt-4">
-                <button
-                  onClick={() => { setShowPostModal(false); setIsEditing(false); setEditingId(null); }}
-                  className={`flex-1 py-5 rounded-[1.5rem] font-black text-xl transition-all ${darkMode
-                    ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-                    }`}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-[2] py-5 bg-green-600 text-white rounded-[1.5rem] font-black text-xl shadow-2xl shadow-green-600/30 hover:bg-green-700 hover:scale-[1.02] active:scale-95 transition-all"
-                >
-                  {isEditing ? 'Update Listing' : 'Post to Market'}
-                </button>
+                <div className="flex gap-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => { setShowPostModal(false); setIsEditing(false); setEditingId(null); }}
+                    className={`flex-1 py-5 rounded-[1.5rem] font-black text-xl transition-all ${darkMode
+                      ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                      : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                      }`}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-[2] py-5 bg-green-600 text-white rounded-[1.5rem] font-black text-xl shadow-2xl shadow-green-600/30 hover:bg-green-700 hover:scale-[1.02] active:scale-95 transition-all"
+                  >
+                    {isEditing ? 'Update' : 'Post Now'}
+                  </button>
+                </div>
               </div>
             </form>
           </div>

@@ -5,6 +5,7 @@ export interface User {
   id: string;
   name: string;
   location: string;
+  phoneNumber?: string;
   role: 'farmer' | 'buyer' | 'extension-officer';
   profileImage?: string;
 }
