@@ -283,15 +283,59 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode, user }) => {
           ))}
         </div>
       ) : (
-        <div className={`w-full aspect-video rounded-[3rem] border-4 border-dashed flex flex-col items-center justify-center text-center p-10 ${darkMode ? 'bg-slate-800 border-slate-700 text-slate-500' : 'bg-slate-50 border-slate-200 text-slate-400'}`}>
-          <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-6">
-            <MapIcon size={48} />
+        <div className={`w-full min-h-[500px] rounded-[3rem] border-4 border-dashed flex flex-col items-center justify-center text-center p-12 transition-all ${darkMode ? 'bg-slate-800/50 border-slate-700 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
+          <div className="w-24 h-24 rounded-[2rem] bg-green-100 dark:bg-green-900/30 text-green-600 flex items-center justify-center mb-8 shadow-inner ring-8 ring-green-50/50 dark:ring-green-900/10">
+            <MapIcon size={48} strokeWidth={2.5} />
           </div>
-          <h3 className="text-2xl font-black">Interactive Supply Chain Map</h3>
-          <p className="max-w-md mt-2 font-medium">Visualizing {filtered.length} active listings across Kumasi, Accra, and Tamale. Upgrade to Pro for real-time logistics tracking.</p>
-          <div className="mt-8 flex gap-4">
-            <div className="px-4 py-2 rounded-full bg-green-100 text-green-700 text-xs font-bold">24 Active in Ashanti</div>
-            <div className="px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">12 Active in Greater Accra</div>
+          <h3 className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">Supply Chain Intelligence</h3>
+          <p className="max-w-xl mt-4 text-lg font-medium leading-relaxed">
+            Visualizing <span className="text-green-600 font-extrabold">{filtered.length} active listings</span> across Ghana.
+            Real-time supply heatmaps and logistics tracking enabled for your current filters.
+          </p>
+
+          <div className="mt-12 w-full max-w-4xl">
+            <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center justify-center gap-2">
+              <div className="h-px w-8 bg-slate-200 dark:bg-slate-700"></div>
+              Regional Distribution Hotzones
+              <div className="h-px w-8 bg-slate-200 dark:bg-slate-700"></div>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-4">
+              {Object.entries(
+                filtered.reduce((acc, curr) => {
+                  acc[curr.location] = (acc[curr.location] || 0) + 1;
+                  return acc;
+                }, {} as Record<string, number>)
+              ).sort((a, b) => b[1] - a[1]).map(([region, count]) => (
+                <button
+                  key={region}
+                  onClick={() => setActiveRegion(region)}
+                  className="group relative flex items-center gap-3 bg-white dark:bg-slate-800 px-6 py-4 rounded-[1.5rem] shadow-sm border border-slate-100 dark:border-slate-700 hover:border-green-500 transition-all hover:scale-105 active:scale-95"
+                >
+                  <div className="w-8 h-8 rounded-full bg-green-50 dark:bg-green-900/20 text-green-600 flex items-center justify-center text-xs font-black">
+                    {count}
+                  </div>
+                  <div className="text-sm font-black text-slate-700 dark:text-slate-200">{region}</div>
+                  <div className="absolute inset-0 rounded-[1.5rem] bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </button>
+              ))}
+
+              {filtered.length === 0 && (
+                <div className="text-slate-400 font-bold italic py-8">
+                  No listings found for the current filters to display on the map.
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-12 p-6 bg-blue-50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/20 max-w-md">
+            <p className="text-xs text-blue-600 dark:text-blue-400 font-black uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+              <Check size={14} /> Pro Insight Enabled
+            </p>
+            <p className="text-sm font-medium text-blue-800 dark:text-blue-300">
+              Supply clusters detected in {Object.keys(filtered.reduce((acc, curr) => { acc[curr.location] = 1; return acc; }, {} as any)).slice(0, 3).join(', ')}.
+              Logistics optimization suggests night transport for these routes.
+            </p>
           </div>
         </div>
       )}
