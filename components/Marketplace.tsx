@@ -11,6 +11,10 @@ interface Props {
   user: User | null;
 }
 
+const GHANA_REGIONS = [
+  'Ashanti', 'Greater Accra', 'Central', 'Western', 'Eastern', 'Northern', 'Volta', 'Upper East', 'Upper West', 'Bono', 'Bono East', 'Ahafo', 'Savannah', 'North East', 'Oti', 'Western North'
+];
+
 const Marketplace: React.FC<Props> = ({ lang, t, darkMode, user }) => {
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
   const [activeType, setActiveType] = useState<'all' | 'sale' | 'wanted'>('all');
@@ -26,6 +30,7 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode, user }) => {
     price: '',
     type: 'sale' as 'sale' | 'wanted',
     category: 'Grain',
+    location: '',
     contact: ''
   });
 
@@ -53,6 +58,7 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode, user }) => {
       price: item.price.replace(/GH₵|₵/g, '').trim(),
       type: item.type,
       category: item.category,
+      location: item.location,
       contact: item.contact
     });
     setEditingId(item.id);
@@ -68,6 +74,7 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode, user }) => {
         price: '',
         type: 'sale',
         category: 'Grain',
+        location: user?.location || 'Ashanti',
         contact: user?.phoneNumber || ''
       });
     }
@@ -103,7 +110,7 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode, user }) => {
     setShowPostModal(false);
     setIsEditing(false);
     setEditingId(null);
-    setNewListing({ title: '', description: '', price: '', type: 'sale', category: 'Grain', contact: '' });
+    setNewListing({ title: '', description: '', price: '', type: 'sale', category: 'Grain', location: '', contact: '' });
   };
 
   const filtered = listings.filter(l => {
@@ -177,9 +184,14 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode, user }) => {
                 {item.description}
               </p>
 
-              <div className="space-y-5 pt-6 border-t border-slate-100 dark:border-slate-700">
-                <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                  <Tag size={14} className="text-green-600" /> {item.category}
+              <div className="space-y-4 pt-6 border-t border-slate-100 dark:border-slate-700">
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 dark:bg-slate-700/50 px-3 py-1.5 rounded-full">
+                    <Tag size={14} className="text-green-600" /> {item.category}
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 dark:bg-slate-700/50 px-3 py-1.5 rounded-full">
+                    <MapPin size={14} className="text-green-600" /> {item.location}
+                  </div>
                 </div>
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">
@@ -262,6 +274,24 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode, user }) => {
                   <div className="grid grid-cols-2 gap-3">
                     <button type="button" onClick={() => setNewListing({ ...newListing, type: 'sale' })} className={`py-4 rounded-2xl font-black text-sm transition-all border-2 ${newListing.type === 'sale' ? 'bg-green-600 text-white border-green-400 shadow-lg shadow-green-600/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-transparent'}`}>Selling</button>
                     <button type="button" onClick={() => setNewListing({ ...newListing, type: 'wanted' })} className={`py-4 rounded-2xl font-black text-sm transition-all border-2 ${newListing.type === 'wanted' ? 'bg-amber-500 text-white border-amber-300 shadow-lg shadow-amber-500/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-transparent'}`}>Wanted</button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Region / Location</label>
+                  <div className="relative">
+                    <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                    <select
+                      required
+                      value={newListing.location}
+                      onChange={e => setNewListing({ ...newListing, location: e.target.value })}
+                      className={`w-full pl-16 pr-6 py-5 rounded-[1.5rem] border-2 outline-none appearance-none font-bold text-lg transition-all ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`}
+                    >
+                      <option value="" disabled>Select Region</option>
+                      {GHANA_REGIONS.map(region => (
+                        <option key={region} value={region}>{region}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 

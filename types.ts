@@ -51,5 +51,6 @@ export interface MarketplaceListing {
   price: string;
   type: 'sale' | 'wanted';
   category: string;
+  location: string;
   contact: string;
 }

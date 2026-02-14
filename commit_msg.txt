@@ -1,7 +1,7 @@
-Redesign Marketplace Form and Add Phone Number Integration
+Add Location/Region to Marketplace Listings
 
-- Updated User type and Auth flow to collect and persist user phone numbers.
-- Implemented automatic contact number pre-filling in the Marketplace listing form based on the user's profile.
-- Completely redesigned the Marketplace post modal with a responsive two-column layout and modern styling (max-w-4xl).
-- Integrated phone number management into the Settings view.
-- Improved overall form usability and visual hierarchy across the application.
+- Updated `MarketplaceListing` type to include a required `location` field.
+- Integrated a regional selection dropdown into the Marketplace post modal.
+- Implemented automatic location pre-filling from the user's profile.
+- Updated Marketplace cards to display the listing's region with a Map icon.
+- Added GHANA_REGIONS constant for standardized location selection across the app.
