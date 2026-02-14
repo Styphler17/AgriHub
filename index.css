@@ -27,6 +27,14 @@
   .dark .custom-scrollbar::-webkit-scrollbar-thumb {
     @apply bg-slate-600;
   }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 @keyframes slideIn {

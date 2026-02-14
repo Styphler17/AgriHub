@@ -23,6 +23,7 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode, user }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeRegion, setActiveRegion] = useState<string>('All');
 
   const [newListing, setNewListing] = useState({
     title: '',
@@ -115,9 +116,11 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode, user }) => {
 
   const filtered = listings.filter(l => {
     const matchesType = activeType === 'all' || l.type === activeType;
+    const matchesRegion = activeRegion === 'All' || l.location === activeRegion;
     const matchesSearch = l.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      l.category.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesType && matchesSearch;
+      l.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      l.location.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesType && matchesRegion && matchesSearch;
   });
 
   return (
@@ -161,6 +164,46 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode, user }) => {
           onChange={e => setSearchTerm(e.target.value)}
           className="flex-1 bg-transparent border-none outline-none font-bold text-slate-700 dark:text-slate-200"
         />
+      </div>
+
+      {/* Region Filters */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-2">
+          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <MapPin size={14} className="text-green-600" /> Filter by Region
+          </h4>
+          {activeRegion !== 'All' && (
+            <button
+              onClick={() => setActiveRegion('All')}
+              className="text-[10px] font-black text-green-600 uppercase tracking-widest hover:underline"
+            >
+              Clear Filter
+            </button>
+          )}
+        </div>
+        <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar -mx-2 px-2 scroll-smooth">
+          <button
+            onClick={() => setActiveRegion('All')}
+            className={`px-6 py-3 rounded-2xl text-xs font-black whitespace-nowrap transition-all border-2 ${activeRegion === 'All'
+              ? 'bg-green-600 border-green-600 text-white shadow-lg shadow-green-600/20'
+              : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 text-slate-500 hover:border-slate-200'
+              }`}
+          >
+            🌍 All Regions
+          </button>
+          {GHANA_REGIONS.map(region => (
+            <button
+              key={region}
+              onClick={() => setActiveRegion(region)}
+              className={`px-6 py-3 rounded-2xl text-xs font-black whitespace-nowrap transition-all border-2 ${activeRegion === region
+                ? 'bg-green-600 border-green-600 text-white shadow-lg shadow-green-600/20'
+                : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 text-slate-500 hover:border-slate-200'
+                }`}
+            >
+              {region}
+            </button>
+          ))}
+        </div>
       </div>
 
       {viewMode === 'grid' ? (

@@ -1,7 +1,7 @@
-Add Location/Region to Marketplace Listings
+Add Regional Filtering System to Marketplace
 
-- Updated `MarketplaceListing` type to include a required `location` field.
-- Integrated a regional selection dropdown into the Marketplace post modal.
-- Implemented automatic location pre-filling from the user's profile.
-- Updated Marketplace cards to display the listing's region with a Map icon.
-- Added GHANA_REGIONS constant for standardized location selection across the app.
+- Implemented a modern, horizontally scrollable region filter bar on the Marketplace page.
+- Added support for filtering listings by any of the 16 Ghanaian regions.
+- Updated filtering logic to combine type, search, and region filters seamlessly.
+- Added a 'no-scrollbar' utility to CSS for a cleaner horizontal scrolling experience.
+- Inclusion of an 'All Regions' option and a quick-clear filter button for better UX.
