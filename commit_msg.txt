@@ -1,7 +1,5 @@
-Fix CORS issues and modernize build process
+Upgrade to Tailwind CSS v4 PostCSS integration
 
-- Whitelisted http://localhost:3000 for Dexie Cloud authentication.
-- Replaced Tailwind CSS CDN with native Vite/NPM integration.
-- Consolidated custom styles and fonts into index.css.
-- Removed external CDN assets from sw.js to fix Service Worker fetch errors.
-- Cleaned up index.html by removing import maps and CDN scripts.
+- Installed @tailwindcss/postcss as required by Tailwind v4.
+- Updated postcss.config.js to use the new @tailwindcss/postcss plugin.
+- Updated index.css to use Tailwind v4 @import "tailwindcss" directive.
