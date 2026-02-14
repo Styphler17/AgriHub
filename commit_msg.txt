@@ -1,5 +1,7 @@
-Implement listing deletion for authors
+Enhance Marketplace: Add Editing, Fix UI Overlaps, and Remove Mocks
 
-- Added handleDelete function to Marketplace.tsx to remove listings from database and state.
-- Added a Trash icon button to listing cards, visible only to the author of the listing.
-- Integrated browser confirm() for safe deletion.
+- Implemented full Edit/Update functionality for marketplace listings.
+- Improved 'handlePost' to handle both additions and modifications.
+- Reduced action button sizes (Pencil, Trash, Message) in listing cards to prevent overlaps and improve layout.
+- Removed all hardcoded 'MOCK_LISTINGS' from 'App.tsx' and 'Marketplace.tsx' to ensure a real data-only state.
+- Refined price formatting logic to handle currency symbol stripping more robustly during edits.

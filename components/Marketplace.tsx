@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useObservable } from 'dexie-react-hooks';
 import { MarketplaceListing } from '../types';
 import { db } from '../db';
-import { ShoppingBag, Search, Plus, MessageCircle, MapPin, Tag, X, User as UserIcon, Check, Map as MapIcon, List, Trash2 } from 'lucide-react';
+import { ShoppingBag, Search, Plus, MessageCircle, MapPin, Tag, X, User as UserIcon, Check, Map as MapIcon, List, Trash2, Pencil } from 'lucide-react';
 
 interface Props {
   lang: string;
@@ -10,17 +10,13 @@ interface Props {
   darkMode: boolean;
 }
 
-export const MOCK_LISTINGS: MarketplaceListing[] = [
-  { id: '1', userId: 'u1', userName: 'Kojo Asante', title: '50 Bags of Organic Maize', description: 'Harvested last week, Grade A quality. No chemicals used.', price: '₵450/bag', type: 'sale', category: 'Grain', contact: '024 123 4567' },
-  { id: '2', userId: 'u2', userName: 'Grace Mensah', title: 'Looking for 100 Tubers of Yam', description: 'Pona preferred. Needed for export by Friday.', price: 'Offer Based', type: 'wanted', category: 'Roots', contact: '050 987 6543' },
-  { id: '3', userId: 'u3', userName: 'Kwame Agro', title: 'NPK Fertilizer for Sale', description: 'Surplus stock from government subsidy. 50kg bags.', price: '₵200/bag', type: 'sale', category: 'Inputs', contact: '027 555 1234' },
-];
-
 const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
   const [activeType, setActiveType] = useState<'all' | 'sale' | 'wanted'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
   const [showPostModal, setShowPostModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   const currentUser = useObservable(db.cloud.currentUser);
@@ -40,36 +36,60 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
 
   const loadListings = async () => {
     const data = await db.listings.toArray();
-    setListings(data.length > 0 ? data : MOCK_LISTINGS);
+    setListings(data);
   };
 
   const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to remove this listing?')) {
       await db.listings.delete(id);
-      setListings(listings.filter(l => l.id !== id));
+      loadListings();
     }
+  };
+
+  const handleEdit = (item: MarketplaceListing) => {
+    setNewListing({
+      title: item.title,
+      description: item.description,
+      // Strip GH₵ and ₵ using regex to handle variations in spacing
+      price: item.price.replace(/GH₵|₵/g, '').trim(),
+      type: item.type,
+      category: item.category,
+      contact: item.contact
+    });
+    setEditingId(item.id);
+    setIsEditing(true);
+    setShowPostModal(true);
   };
 
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Automatically assign currency if not present
     let finalPrice = newListing.price.trim();
     if (!finalPrice.startsWith('GH₵') && !finalPrice.startsWith('₵')) {
       finalPrice = `GH₵ ${finalPrice}`;
     }
 
-    const listing: MarketplaceListing = {
-      ...newListing,
-      price: finalPrice,
-      id: Math.random().toString(36).substr(2, 9),
-      userId: currentUser?.userId || 'anonymous',
-      userName: (currentUser as any)?.name || currentUser?.email || 'Farmer',
-      userProfileImage: (currentUser as any)?.profileImage,
-    };
-    await db.listings.add(listing);
-    setListings([listing, ...listings]);
+    if (isEditing && editingId) {
+      await db.listings.update(editingId, {
+        ...newListing,
+        price: finalPrice
+      });
+    } else {
+      const listing: MarketplaceListing = {
+        ...newListing,
+        price: finalPrice,
+        id: Math.random().toString(36).substr(2, 9),
+        userId: currentUser?.userId || 'anonymous',
+        userName: (currentUser as any)?.name || currentUser?.email || 'Farmer',
+        userProfileImage: (currentUser as any)?.profileImage,
+      };
+      await db.listings.add(listing);
+    }
+
+    loadListings();
     setShowPostModal(false);
+    setIsEditing(false);
+    setEditingId(null);
     setNewListing({ title: '', description: '', price: '', type: 'sale', category: 'Grain', contact: '' });
   };
 
@@ -164,20 +184,29 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
                   </div>
                   <div className="flex gap-2">
                     {item.userId === currentUser?.userId && (
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="bg-red-50 text-red-500 p-4 rounded-2xl hover:bg-red-100 active:scale-90 transition-all border border-red-100"
-                        aria-label="Delete listing"
-                      >
-                        <Trash2 size={24} />
-                      </button>
+                      <>
+                        <button
+                          onClick={() => handleEdit(item)}
+                          className="bg-blue-50 text-blue-500 p-3 rounded-2xl hover:bg-blue-100 active:scale-90 transition-all border border-blue-100"
+                          aria-label="Edit listing"
+                        >
+                          <Pencil size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="bg-red-50 text-red-500 p-3 rounded-2xl hover:bg-red-100 active:scale-90 transition-all border border-red-100"
+                          aria-label="Delete listing"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </>
                     )}
                     <button
                       onClick={() => window.open(`tel:${item.contact}`)}
-                      className="bg-green-600 text-white p-4 rounded-2xl shadow-xl shadow-green-600/20 hover:bg-green-700 active:scale-90 transition-all"
+                      className="bg-green-600 text-white p-3 rounded-2xl shadow-xl shadow-green-600/20 hover:bg-green-700 active:scale-90 transition-all"
                       aria-label="Contact seller"
                     >
-                      <MessageCircle size={24} />
+                      <MessageCircle size={18} />
                     </button>
                   </div>
                 </div>
@@ -202,15 +231,15 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
       {showPostModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/70 backdrop-blur-md animate-in fade-in duration-300">
           <div className={`w-full max-w-lg p-10 rounded-[3rem] shadow-2xl relative animate-in zoom-in duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar ${darkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white'}`}>
-            <button onClick={() => setShowPostModal(false)} className="absolute top-8 right-8 text-slate-400 hover:text-slate-600 transition-colors">
+            <button onClick={() => { setShowPostModal(false); setIsEditing(false); setEditingId(null); }} className="absolute top-8 right-8 text-slate-400 hover:text-slate-600 transition-colors">
               <X size={32} />
             </button>
             <div className="flex flex-col items-center text-center mb-10">
               <div className="w-20 h-20 bg-green-100 text-green-600 rounded-[2rem] flex items-center justify-center mb-6 shadow-inner">
-                <ShoppingBag size={40} />
+                {isEditing ? <Pencil size={40} /> : <ShoppingBag size={40} />}
               </div>
-              <h3 className="text-3xl font-black">New Listing</h3>
-              <p className="text-slate-500 text-sm mt-2">Connect with buyers and sellers in your region.</p>
+              <h3 className="text-3xl font-black">{isEditing ? 'Edit Your Listing' : 'New Listing'}</h3>
+              <p className="text-slate-500 text-sm mt-2">{isEditing ? 'Make changes to your active post.' : 'Connect with buyers and sellers in your region.'}</p>
             </div>
 
             <form onSubmit={handlePost} className="space-y-6">
@@ -262,8 +291,7 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
 
               <div className="flex gap-4 pt-4">
                 <button
-                  type="button"
-                  onClick={() => setShowPostModal(false)}
+                  onClick={() => { setShowPostModal(false); setIsEditing(false); setEditingId(null); }}
                   className={`flex-1 py-5 rounded-[1.5rem] font-black text-xl transition-all ${darkMode
                     ? 'bg-slate-800 text-slate-300 hover:bg-slate-700'
                     : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
@@ -275,7 +303,7 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
                   type="submit"
                   className="flex-[2] py-5 bg-green-600 text-white rounded-[1.5rem] font-black text-xl shadow-2xl shadow-green-600/30 hover:bg-green-700 hover:scale-[1.02] active:scale-95 transition-all"
                 >
-                  Post to Market
+                  {isEditing ? 'Update Listing' : 'Post to Market'}
                 </button>
               </div>
             </form>

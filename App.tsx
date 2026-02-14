@@ -5,7 +5,7 @@ import { Language, User } from './types';
 import Dashboard from './components/Dashboard';
 import CropAdvisor from './components/CropAdvisor';
 import MarketPrices, { MOCK_PRICES } from './components/MarketPrices';
-import Marketplace, { MOCK_LISTINGS } from './components/Marketplace';
+import Marketplace from './components/Marketplace';
 import SettingsView from './components/Settings';
 import Auth from './components/Auth';
 import { db } from './db';
@@ -99,7 +99,6 @@ const App: React.FC = () => {
       const priceCount = await db.prices.count();
       if (priceCount === 0) {
         await db.prices.bulkPut(MOCK_PRICES);
-        await db.listings.bulkPut(MOCK_LISTINGS);
       }
     };
     initDb();
