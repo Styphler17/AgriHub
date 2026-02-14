@@ -45,8 +45,16 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
 
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Automatically assign currency if not present
+    let finalPrice = newListing.price.trim();
+    if (!finalPrice.startsWith('GH₵') && !finalPrice.startsWith('₵')) {
+      finalPrice = `GH₵ ${finalPrice}`;
+    }
+
     const listing: MarketplaceListing = {
       ...newListing,
+      price: finalPrice,
       id: Math.random().toString(36).substr(2, 9),
       userId: currentUser?.userId || 'anonymous',
       userName: (currentUser as any)?.name || currentUser?.email || 'Farmer',
@@ -201,7 +209,16 @@ const Marketplace: React.FC<Props> = ({ lang, t, darkMode }) => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Price</label>
-                  <input required value={newListing.price} onChange={e => setNewListing({ ...newListing, price: e.target.value })} className={`w-full px-6 py-4 rounded-2xl border-2 outline-none ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`} placeholder="₵500 total" />
+                  <div className="relative">
+                    <span className="absolute left-6 top-1/2 -translate-y-1/2 font-black text-green-600">GH₵</span>
+                    <input
+                      required
+                      value={newListing.price}
+                      onChange={e => setNewListing({ ...newListing, price: e.target.value })}
+                      className={`w-full pl-16 pr-6 py-4 rounded-2xl border-2 outline-none ${darkMode ? 'bg-slate-800 border-slate-700 focus:border-green-600' : 'bg-slate-50 border-slate-200 focus:border-green-600'}`}
+                      placeholder="500 total"
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>

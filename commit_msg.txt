@@ -1,6 +1,5 @@
-Fix Profile Persistence and Metadata Synchronization
+Automatically assign currency to marketplace prices
 
-- Added a 'profiles' table to the Dexie schema (v3) to persist user-defined metadata (name, photo, location, role) across cloud sync.
-- Switched to useLiveQuery in App.tsx for real-time reactivity when the profile changes.
-- Implemented handleUpdateUser to properly save the profile object to the database.
-- Fixed the UI not updating after saving a profile image by ensuring the memoized 'user' object merges the stored profile correctly.
+- Modified handlePost in Marketplace.tsx to automatically prepend 'GH₵' to the price if no currency symbol is provided.
+- Updated the price input UI in the marketplace modal to display a fixed 'GH₵' prefix for better user experience.
+- Improved price data consistency across the platform.
