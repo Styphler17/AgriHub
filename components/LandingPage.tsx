@@ -291,7 +291,7 @@ const LandingPage: React.FC<Props> = ({ onGetStarted, onSignIn, isLoggedIn, onLo
             {/* CTA Section */}
             <section className="py-24 px-6 relative overflow-hidden">
                 <div className="absolute inset-0 bg-green-600"></div>
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
+                <div className="absolute inset-0 bg-[url('/cta-image.jpeg')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
 
                 <div className="max-w-4xl mx-auto text-center relative z-10 text-white">
                     <Reveal direction="up">
