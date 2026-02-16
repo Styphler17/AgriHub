@@ -14,8 +14,13 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) return cachedResponse;
+      
+      return fetch(event.request).catch(() => {
+        // Silent fail for failed fetches (like tracking or non-critical assets)
+        return new Response('Offline content unavailable', { status: 503 });
+      });
     })
   );
 });

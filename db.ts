@@ -7,21 +7,22 @@ export class AgriHubDB extends Dexie {
   weather!: Table<WeatherData>;
   listings!: Table<MarketplaceListing>;
   profiles!: Table<User>;
-  priceHistory!: Table<PriceHistory>;
+  priceAudit!: Table<PriceHistory>;
 
   constructor() {
     super('AgriHubDB_v2', { addons: [dexieCloud] });
-    this.version(4).stores({
+    this.version(6).stores({
       prices: 'id, commodity, location',
       weather: 'city',
       listings: 'id, category, type',
       profiles: 'id',
-      priceHistory: '++id, priceId, timestamp'
+      priceAudit: 'id, priceId, timestamp'
     });
 
     this.cloud.configure({
       databaseUrl: "https://zd5fgzz6e.dexie.cloud",
-      requireAuth: true
+      requireAuth: false,
+      customLoginGui: true
     });
   }
 }

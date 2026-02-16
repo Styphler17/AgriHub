@@ -38,7 +38,8 @@ import {
   Pencil,
   Plus,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  History
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 
@@ -81,7 +82,7 @@ const COMMODITY_ICONS: Record<string, any> = {
 
 const MarketPrices: React.FC<Props> = ({ lang, t, darkMode, isOnline, user, showToast }) => {
   const prices = useLiveQuery(() => db.prices.toArray()) || [];
-  const priceHistory = useLiveQuery(() => db.priceHistory.orderBy('timestamp').reverse().limit(10).toArray()) || [];
+  const priceHistory = useLiveQuery(() => db.priceAudit.orderBy('timestamp').reverse().limit(10).toArray()) || [];
   const [filter, setFilter] = useState('');
   const [trendFilter, setTrendFilter] = useState<'all' | 'up' | 'down' | 'stable'>('all');
   const [selectedCommodityId, setSelectedCommodityId] = useState<string | null>(null);
@@ -110,6 +111,32 @@ const MarketPrices: React.FC<Props> = ({ lang, t, darkMode, isOnline, user, show
     });
   };
 
+  const dynamicChartData = useMemo(() => {
+    const rangeKey = timeRange.toUpperCase() === '1W' ? '1M' : timeRange.toUpperCase();
+    const baseData = HISTORICAL_DATA_VARIANTS[rangeKey] || HISTORICAL_DATA_VARIANTS['1Y'];
+
+    if (!selectedPrice) return baseData;
+
+    // We filter history for the selected price for the "Historical" part
+    const commodityHistory = (priceHistory || []).filter(h => h.priceId === selectedPrice.id).reverse();
+
+    // Combine base "trend" data with live audit history and current price
+    const historicalPoints = baseData.slice(0, -2); // Take trend background
+    const livePoints = commodityHistory.map(h => ({
+      date: new Date(h.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' }),
+      price: h.newPrice,
+      isLive: true
+    }));
+
+    const finalPoint = {
+      date: 'Latest',
+      price: selectedPrice.price,
+      isLive: true
+    };
+
+    return [...historicalPoints, ...livePoints, finalPoint];
+  }, [selectedPrice, timeRange, priceHistory]);
+
   const handleUpdatePrice = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingPriceItem) return;
@@ -131,7 +158,8 @@ const MarketPrices: React.FC<Props> = ({ lang, t, darkMode, isOnline, user, show
       const trend = newPrice > oldPrice ? 'up' : newPrice < oldPrice ? 'down' : 'stable';
 
       // 1. Log Audit Record
-      await db.priceHistory.add({
+      await db.priceAudit.add({
+        id: Math.random().toString(36).substr(2, 9),
         priceId: editingPriceItem.id,
         commodity: editingPriceItem.commodity,
         oldPrice: oldPrice,
@@ -239,7 +267,7 @@ const MarketPrices: React.FC<Props> = ({ lang, t, darkMode, isOnline, user, show
             {t.prices}
             <div className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-full text-xs font-black uppercase tracking-widest">Live</div>
           </h2>
-          <p className="text-slate-500 font-medium mt-1">Real-time market analytics across all Ghanaian regions.</p>
+          <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">Real-time market analytics across all Ghanaian regions.</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4">
@@ -299,7 +327,7 @@ const MarketPrices: React.FC<Props> = ({ lang, t, darkMode, isOnline, user, show
                         <Star size={24} className={favorites.includes(selectedPrice.commodity) ? 'text-amber-500' : 'text-slate-300'} fill={favorites.includes(selectedPrice.commodity) ? 'currentColor' : 'none'} />
                       </button>
                     </div>
-                    <p className="text-slate-500 text-lg font-bold flex items-center gap-2 mt-1">
+                    <p className="text-slate-500 dark:text-slate-400 text-lg font-bold flex items-center gap-2 mt-1">
                       <MapPin size={20} className="text-green-600" /> {selectedPrice.location}
                     </p>
                     <div className="flex gap-2 mt-4">
@@ -349,7 +377,7 @@ const MarketPrices: React.FC<Props> = ({ lang, t, darkMode, isOnline, user, show
                 </div>
                 <div className="h-[250px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={HISTORICAL_DATA_VARIANTS['1Y']}>
+                    <AreaChart data={dynamicChartData}>
                       <defs>
                         <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#16a34a" stopOpacity={0.3} />
@@ -471,7 +499,7 @@ const MarketPrices: React.FC<Props> = ({ lang, t, darkMode, isOnline, user, show
                 <RefreshCw size={40} className="animate-spin-slow" />
               </div>
               <h3 className="text-4xl font-black tracking-tighter">Market Update</h3>
-              <p className="text-slate-500 font-medium mt-2">Adjust live pricing for <span className="text-green-600 font-black">{editingPriceItem.commodity}</span> at <span className="text-slate-900 dark:text-white font-black">{editingPriceItem.location}</span>.</p>
+              <p className="text-slate-500 dark:text-slate-400 font-medium mt-2">Adjust live pricing for <span className="text-green-600 font-black">{editingPriceItem.commodity}</span> at <span className="text-slate-900 dark:text-white font-black">{editingPriceItem.location}</span>.</p>
             </div>
 
             <form onSubmit={handleUpdatePrice} className="space-y-8">

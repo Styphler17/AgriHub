@@ -7,7 +7,10 @@ import CropAdvisor from './components/CropAdvisor';
 import MarketPrices, { MOCK_PRICES } from './components/MarketPrices';
 import Marketplace from './components/Marketplace';
 import SettingsView from './components/Settings';
+import LandingPage from './components/LandingPage';
 import Auth from './components/Auth';
+import ReadingProgressBar from './components/ReadingProgressBar';
+import LogoutModal from './components/LogoutModal';
 import { db } from './db';
 import {
   LayoutDashboard,
@@ -28,17 +31,29 @@ import {
   AlertTriangle,
   Info,
   History,
-  ShieldCheck
+  ShieldCheck,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 const App: React.FC = () => {
   const [lang, setLang] = useState<Language>(() => (localStorage.getItem('agrihub_lang') as Language) || 'en');
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState(() => localStorage.getItem('agrihub_active_tab') || 'dashboard');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('agrihub_dark') === 'true');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [lowDataMode, setLowDataMode] = useState(() => localStorage.getItem('agrihub_lowdata') === 'true');
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showLanding, setShowLanding] = useState(() => {
+    // If we have a persisted active tab that isn't dashboard, or if we think we might be logged in,
+    // we might want to skip landing. But authentication check happens later.
+    // For now, let's just default to true, but we will override it in a useEffect if needed.
+    return !localStorage.getItem('agrihub_active_tab');
+  });
+  const [showAuth, setShowAuth] = useState(false);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signup');
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
   // Real Dexie Cloud State
   const currentUser = useObservable(db.cloud.currentUser);
@@ -59,15 +74,40 @@ const App: React.FC = () => {
     [currentUser?.userId]
   );
 
-  // Explicit logout handler
-  const handleLogout = async () => {
+  // Explicit logout handler triggers modal
+  const handleLogout = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = async () => {
     try {
-      await db.cloud.logout();
-      // Direct reload to clear any remaining in-memory states and force Auth re-init
+      // 1. Delete the main database
+      await db.delete();
+
+      // 2. Scorched Earth: Delete ALL IndexedDB databases (clears internal token DBs)
+      if (window.indexedDB && window.indexedDB.databases) {
+        const dbs = await window.indexedDB.databases();
+        for (const database of dbs) {
+          if (database.name) {
+            window.indexedDB.deleteDatabase(database.name);
+          }
+        }
+      }
+
+      // 3. Clear all storage
+      localStorage.clear();
+      sessionStorage.clear();
+
+      // 4. Clear cookies
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+
+      setShowLanding(true);
       window.location.href = window.location.origin;
     } catch (err) {
       console.error("Logout failed:", err);
-      // Fallback: reload anyway
+      // Even if error, force reload
       window.location.reload();
     }
   };
@@ -97,9 +137,27 @@ const App: React.FC = () => {
 
   useEffect(() => {
     localStorage.setItem('agrihub_lang', lang);
+    localStorage.setItem('agrihub_active_tab', activeTab);
     localStorage.setItem('agrihub_dark', darkMode.toString());
     localStorage.setItem('agrihub_lowdata', lowDataMode.toString());
-  }, [lang, darkMode, lowDataMode]);
+
+    // Apply dark mode class to html element for Tailwind
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [lang, activeTab, darkMode, lowDataMode]);
+
+  // Reconcile Auth State with UI
+  useEffect(() => {
+    // Only redirect if we are DEFINITELY logged in
+    if (currentUser?.isLoggedIn) {
+      setShowLanding(false);
+      setShowAuth(false);
+    }
+    // If logged out, we don't automatically show landing, because user might be in the middle of signing up (showAuth=true)
+  }, [currentUser?.isLoggedIn]);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -138,11 +196,52 @@ const App: React.FC = () => {
     );
   }
 
-  if (currentUser.isLoggedIn === false) {
-    return <Auth lang={lang} t={t} />;
+  if (showLanding) {
+    return (
+      <>
+        {showLogoutConfirm && <LogoutModal onCancel={() => setShowLogoutConfirm(false)} onConfirm={confirmLogout} />}
+        <LandingPage
+          onGetStarted={() => {
+            if (user) {
+              setShowLanding(false);
+              setShowAuth(false);
+            } else {
+              setAuthMode('signup');
+              setShowLanding(false);
+              setShowAuth(true);
+            }
+          }}
+          onSignIn={() => { setAuthMode('signin'); setShowLanding(false); setShowAuth(true); }}
+          darkMode={darkMode}
+          onToggleTheme={() => setDarkMode(!darkMode)}
+          isLoggedIn={!!user}
+          onLogout={handleLogout}
+        />
+      </>
+    );
   }
 
-  const navItems = [
+  // Show auth form if explicitly requested OR if user is not logged in AND not exploring as guest
+  // Guest mode is allowed if activeTab is 'prices' (or potentially 'settings' but usually starts with prices)
+  // We assume if activeTab is 'prices' and !loggedIn, user is in Guest Mode.
+  const isGuestModeActive = !currentUser.isLoggedIn && (activeTab === 'prices');
+
+  if (showAuth || (currentUser.isLoggedIn === false && !isGuestModeActive)) {
+    return <Auth
+      lang={lang}
+      t={t}
+      initialMode={authMode}
+      onBackToHome={() => { setShowLanding(true); setShowAuth(false); }}
+    />;
+  }
+
+  // Guest Mode Logic
+  const isGuest = !user;
+
+  const navItems = isGuest ? [
+    { id: 'prices', label: t.prices, icon: TrendingUp },
+    { id: 'settings', label: t.settings, icon: SettingsIcon },
+  ] : [
     { id: 'dashboard', label: t.dashboard, icon: LayoutDashboard },
     { id: 'advice', label: t.advice, icon: Sprout },
     { id: 'prices', label: t.prices, icon: TrendingUp },
@@ -169,8 +268,10 @@ const App: React.FC = () => {
     }
   };
 
+
   return (
     <div className={`min-h-screen flex transition-colors duration-500 ${darkMode ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-900'}`}>
+      <ReadingProgressBar containerRef={scrollContainerRef} />
 
       {/* Premium Global Toasts */}
       <div className="fixed top-8 right-8 z-[120] flex flex-col gap-4 max-w-sm w-full">
@@ -202,8 +303,13 @@ const App: React.FC = () => {
       <aside className={`fixed inset-y-0 left-0 z-50 w-80 transform transition-transform duration-300 lg:relative lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${darkMode ? 'bg-slate-800/90 border-slate-700' : 'bg-white border-slate-200'} border-r backdrop-blur-xl shadow-2xl lg:shadow-none`}>
         <div className="flex flex-col h-full">
           <div className="p-8">
-            <h1 className="text-3xl font-black text-green-600 flex items-center gap-3"><Sprout size={32} /> AgriHub</h1>
-            <p className="text-[10px] uppercase tracking-widest font-bold opacity-40 mt-1">Farmer Empowerment</p>
+            <div className="flex items-center gap-3">
+              <img src="/logo.png" alt="AgriHub Logo" className="w-auto h-12 object-contain" />
+              <div>
+                <h1 className="text-2xl font-black text-green-600">AgriHub</h1>
+                <p className="text-[8px] uppercase tracking-widest font-bold text-slate-400">Ghana</p>
+              </div>
+            </div>
           </div>
 
           <nav className="flex-1 px-6 space-y-2 overflow-y-auto custom-scrollbar">
@@ -250,26 +356,43 @@ const App: React.FC = () => {
               )}
             </div>
 
-            {user && (
-              <div className="flex items-center gap-4 p-4 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
-                <div className="w-14 h-14 rounded-2xl overflow-hidden bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-xl font-black text-green-600 shadow-inner shrink-0">
-                  {user.profileImage ? (
-                    <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
-                  ) : (
-                    user.name.charAt(0)
-                  )}
+            {user ? (
+              <>
+                <div className="flex items-center gap-4 p-4 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-xl font-black text-green-600 shadow-inner shrink-0">
+                    {user.profileImage ? (
+                      <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
+                    ) : (
+                      user.name.charAt(0)
+                    )}
+                  </div>
+                  <div className="overflow-hidden">
+                    <h3 className="font-black text-slate-800 dark:text-white truncate text-sm">{user.name}</h3>
+                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                      Verified {user.role} <Check size={10} className="text-green-600" />
+                    </p>
+                  </div>
                 </div>
-                <div className="overflow-hidden">
-                  <h3 className="font-black text-slate-800 dark:text-white truncate text-sm">{user.name}</h3>
-                  <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1">
-                    Verified {user.role} <Check size={10} className="text-green-600" />
-                  </p>
+                <button onClick={handleLogout} className="w-full flex items-center gap-3 px-5 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-2xl transition-all font-bold text-sm">
+                  <LogOut size={18} /> Logout
+                </button>
+              </>
+            ) : (
+              <div className="space-y-4">
+                <div className="p-5 rounded-[2rem] bg-green-50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/20">
+                  <p className="text-xs font-black text-green-700 dark:text-green-400 mb-3 uppercase tracking-widest leading-relaxed">Viewing as Guest</p>
+                  <button
+                    onClick={() => { setAuthMode('signin'); setShowAuth(true); }}
+                    className="w-full py-4 bg-green-600 hover:bg-green-700 text-white rounded-2xl font-black text-xs shadow-xl shadow-green-600/20 transition-all active:scale-95"
+                  >
+                    Log In / Sign Up
+                  </button>
                 </div>
+                <button onClick={handleLogout} className="w-full flex items-center gap-3 px-5 py-3 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-2xl transition-all font-bold text-sm">
+                  <LogOut size={18} /> Exit Guest Mode
+                </button>
               </div>
             )}
-            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-5 py-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-2xl transition-all font-bold text-sm">
-              <LogOut size={18} /> Logout
-            </button>
           </div>
         </div>
       </aside >
@@ -277,6 +400,13 @@ const App: React.FC = () => {
       <main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <header className={`h-20 flex items-center justify-between px-8 sticky top-0 z-30 border-b backdrop-blur-xl ${darkMode ? 'bg-slate-900/80 border-slate-700' : 'bg-white/80 border-slate-200'}`}>
           <div className="flex items-center gap-4">
+            {/* Back to Home Button for everyone */}
+            <button
+              onClick={() => { setShowLanding(true); }}
+              className={`hidden md:flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border transition-all ${darkMode ? 'border-slate-700 text-slate-400 hover:text-white hover:border-slate-500' : 'border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300'}`}
+            >
+              <LogOut size={14} className="rotate-180" /> Home
+            </button>
             <button className="lg:hidden p-3 bg-slate-100 dark:bg-slate-800 rounded-xl" onClick={() => setIsSidebarOpen(true)} aria-label="Open Menu"><Menu size={24} /></button>
             <div className="hidden sm:block">
               <h2 className="text-xl font-black tracking-tight">{navItems.find(i => i.id === activeTab)?.label}</h2>
@@ -299,6 +429,12 @@ const App: React.FC = () => {
                 <CloudOff size={14} /> Cloud Dormant
               </div>
             ) : null}
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold border-2 transition-all ${darkMode ? 'bg-slate-800 border-slate-700 hover:border-slate-600' : 'bg-slate-50 border-slate-200 hover:border-slate-300'}`}
+            >
+              {darkMode ? <Moon size={20} className="text-slate-400" /> : <Sun size={20} className="text-amber-500" />}
+            </button>
             {lowDataMode && (
               <div className="flex items-center gap-2 text-blue-600 bg-blue-50 px-4 py-2 rounded-full text-[10px] font-black border border-blue-200 uppercase tracking-widest shadow-sm">
                 Low Data
@@ -310,7 +446,10 @@ const App: React.FC = () => {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-6 lg:p-10 max-w-7xl mx-auto w-full custom-scrollbar">
+        <div
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto p-6 lg:p-10 max-w-7xl mx-auto w-full custom-scrollbar"
+        >
           {activeTab === 'dashboard' && <Dashboard lang={lang} t={t} darkMode={darkMode} isOnline={isOnline} onNavigate={setActiveTab} />}
           {activeTab === 'advice' && <CropAdvisor lang={lang} t={t} darkMode={darkMode} />}
           {activeTab === 'prices' && <MarketPrices lang={lang} t={t} darkMode={darkMode} isOnline={isOnline} user={user} showToast={showToast} />}
@@ -322,7 +461,6 @@ const App: React.FC = () => {
               lang={lang}
               setLang={setLang}
               darkMode={darkMode}
-              setDarkMode={setDarkMode}
               lowDataMode={lowDataMode}
               setLowDataMode={setLowDataMode}
               t={t}
@@ -339,6 +477,7 @@ const App: React.FC = () => {
           <PhoneCall size={32} className="group-hover:rotate-12 transition-transform" />
           <span className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full border-4 border-white dark:border-slate-900 animate-ping" />
         </button>
+        {showLogoutConfirm && <LogoutModal onCancel={() => setShowLogoutConfirm(false)} onConfirm={confirmLogout} />}
       </main>
     </div >
   );

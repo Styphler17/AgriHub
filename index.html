@@ -1,26 +1,55 @@
-
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-    <title>Ghana AgriHub</title>
-    <meta name="theme-color" content="#16a34a" />
-    <meta name="description" content="Digital platform for Ghanaian smallholder farmers." />
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2329/2329113.png" />
-    <link rel="stylesheet" href="/index.css">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+  <title>Ghana AgriHub - Empowering Farmers with Technology</title>
+  <meta name="theme-color" content="#16a34a" />
+  <meta name="description"
+    content="Digital platform empowering Ghanaian smallholder farmers with real-time market prices, weather forecasts, AI crop advice, and supply chain connectivity." />
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Ghana AgriHub - Empowering Farmers" />
+  <meta property="og:description"
+    content="Real-time market prices, weather forecasts, and AI-powered crop advice for Ghanaian farmers." />
+  <meta property="og:image" content="/logo.png" />
+  <meta property="og:url" content="https://agrihub.gh" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Ghana AgriHub" />
+  <meta name="twitter:description" content="Empowering Ghanaian farmers with technology" />
+  <meta name="twitter:image" content="/logo.png" />
+
+  <!-- Apple Mobile Web App -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="AgriHub" />
+
+  <link rel="stylesheet" href="/index.css">
 
 </head>
-  <body class="bg-slate-50 text-slate-900 transition-colors duration-200">
-    <div id="root"></div>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed:', err));
-        });
-      }
-    </script>
+
+<body class="bg-slate-50 text-slate-900 transition-colors duration-200">
+  <div id="root"></div>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed:', err));
+      });
+    }
+  </script>
   <script type="module" src="/index.tsx"></script>
 </body>
+
 </html>

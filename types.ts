@@ -55,7 +55,7 @@ export interface MarketplaceListing {
   contact: string;
 }
 export interface PriceHistory {
-  id?: number;
+  id?: string;
   priceId: string;
   commodity: string;
   oldPrice: number;

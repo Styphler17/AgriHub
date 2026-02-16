@@ -4,7 +4,6 @@ import { db } from '../db';
 import {
   User as UserIcon,
   Globe,
-  Moon,
   Database,
   Save,
   MapPin,
@@ -24,7 +23,6 @@ interface Props {
   lang: Language;
   setLang: (lang: Language) => void;
   darkMode: boolean;
-  setDarkMode: (dark: boolean) => void;
   lowDataMode: boolean;
   setLowDataMode: (low: boolean) => void;
   t: any;
@@ -37,12 +35,13 @@ const SettingsView: React.FC<Props> = ({
   lang,
   setLang,
   darkMode,
-  setDarkMode,
   lowDataMode,
   setLowDataMode,
   t,
   showToast
 }) => {
+  if (!t) return null;
+
   const [name, setName] = useState(user.name);
   const [location, setLocation] = useState(user.location);
   const [phone, setPhone] = useState(user.phoneNumber || '');
@@ -116,7 +115,7 @@ const SettingsView: React.FC<Props> = ({
             </div>
             <div>
               <h2 className="text-2xl font-bold">{t.profileInfo}</h2>
-              <p className="text-slate-500 text-sm">Update your account details and photo</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm">Update your account details and photo</p>
             </div>
           </div>
 
@@ -148,7 +147,7 @@ const SettingsView: React.FC<Props> = ({
                   className="hidden"
                 />
               </div>
-              <div className="text-center text-xs font-black text-slate-400 uppercase tracking-widest leading-relaxed">
+              <div className="text-center text-xs font-black text-slate-400 dark:text-slate-300 uppercase tracking-widest leading-relaxed">
                 {profileImage ? 'Photo uploaded' : t.profileImage}
               </div>
             </div>
@@ -262,7 +261,7 @@ const SettingsView: React.FC<Props> = ({
               </div>
               <div>
                 <h2 className="text-2xl font-bold">{t.appPreferences}</h2>
-                <p className="text-slate-500 text-sm">Customize language and data usage</p>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">Customize language and data usage</p>
               </div>
             </div>
 
@@ -272,7 +271,7 @@ const SettingsView: React.FC<Props> = ({
                   <Globe size={20} className="text-slate-400" />
                   <div>
                     <div className="font-bold">{t.language}</div>
-                    <div className="text-[10px] text-slate-500 font-black uppercase">English / Twi</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-black uppercase">English / Twi</div>
                   </div>
                 </div>
                 <div className="flex bg-slate-200 dark:bg-slate-700 p-1 rounded-2xl">
@@ -295,28 +294,10 @@ const SettingsView: React.FC<Props> = ({
 
               <div className="flex items-center justify-between p-5 rounded-3xl bg-slate-50 dark:bg-slate-900/50">
                 <div className="flex items-center gap-4">
-                  <Moon size={20} className="text-slate-400" />
-                  <div>
-                    <div className="font-bold">Dark Mode</div>
-                    <div className="text-[10px] text-slate-500 font-black uppercase">Save battery at night</div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className={`w-14 h-8 rounded-full transition-all relative ${darkMode ? 'bg-green-600' : 'bg-slate-300'
-                    }`}
-                >
-                  <div className={`w-6 h-6 bg-white rounded-full absolute top-1 shadow-md transition-all ${darkMode ? 'right-1' : 'left-1'
-                    }`} />
-                </button>
-              </div>
-
-              <div className="flex items-center justify-between p-5 rounded-3xl bg-slate-50 dark:bg-slate-900/50">
-                <div className="flex items-center gap-4">
                   <Database size={20} className="text-slate-400" />
                   <div>
                     <div className="font-bold">{t.lowData}</div>
-                    <div className="text-[10px] text-slate-500 font-black uppercase">Fewer images, less data</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-black uppercase">Fewer images, less data</div>
                   </div>
                 </div>
                 <button
@@ -339,7 +320,7 @@ const SettingsView: React.FC<Props> = ({
               </div>
               <div>
                 <h2 className="text-2xl font-bold">{t.dataSecurity}</h2>
-                <p className="text-slate-500 text-sm">Manage your personal information</p>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">Manage your personal information</p>
               </div>
             </div>
 
@@ -352,7 +333,7 @@ const SettingsView: React.FC<Props> = ({
                   <DownloadCloud size={20} className="text-green-600" />
                   <div className="text-left">
                     <div className="font-bold">{t.exportData}</div>
-                    <div className="text-[10px] text-slate-500 font-black uppercase">{t.downloadBackup} (JSON)</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-black uppercase">{t.downloadBackup} (JSON)</div>
                   </div>
                 </div>
                 <Check size={18} className="text-slate-300" />

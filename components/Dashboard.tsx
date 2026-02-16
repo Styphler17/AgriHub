@@ -51,7 +51,7 @@ const Dashboard: React.FC<Props> = ({ lang, t, darkMode, isOnline, onNavigate })
           <div className="flex justify-between items-start mb-8">
             <div>
               <h3 className="text-3xl font-black tracking-tighter mb-2">{t.weather}</h3>
-              <p className="text-slate-500 font-bold uppercase text-xs tracking-widest flex items-center gap-2">
+              <p className="text-slate-500 dark:text-slate-400 font-bold uppercase text-xs tracking-widest flex items-center gap-2">
                 <MapPin size={14} className="text-green-600" /> {weather?.city}, Ghana
               </p>
             </div>
