@@ -168,11 +168,21 @@ const LandingPage: React.FC<Props> = ({ onGetStarted, onSignIn, isLoggedIn, onLo
 
                         {/* Right: Visual */}
                         <div className="relative animate-in slide-in-from-right duration-1000 delay-200 hidden lg:block order-1 lg:order-2">
-                            <img
-                                src="/hero-image.png"
-                                alt="Ghanaian Farmer Using AgriHub"
-                                className="w-full h-auto rounded-[3rem] shadow-2xl object-cover"
-                            />
+                            <picture>
+                                <source
+                                    type="image/webp"
+                                    srcSet="/hero-image.png"
+                                />
+                                <img
+                                    src="/hero-image.png"
+                                    alt="Ghanaian Farmer Using AgriHub"
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="w-full h-auto rounded-[3rem] shadow-2xl object-cover"
+                                    width="1024"
+                                    height="768"
+                                />
+                            </picture>
                         </div>
                     </div>
                 </div>
@@ -315,7 +325,15 @@ const LandingPage: React.FC<Props> = ({ onGetStarted, onSignIn, isLoggedIn, onLo
             <footer className="py-12 px-6 bg-white border-t border-slate-100">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
                     <div className="flex items-center gap-2 opacity-50 grayscale hover:grayscale-0 transition-all">
-                        <img src="/logo.png" alt="AgriHub" className="w-8 h-8 object-contain" />
+                        <img
+                            src="/logo.png"
+                            alt="AgriHub"
+                            className="w-8 h-8 object-contain"
+                            loading="lazy"
+                            decoding="async"
+                            width="32"
+                            height="32"
+                        />
                         <span className="font-black text-slate-900">AgriHub Ghana</span>
                     </div>
                     <p className="text-slate-400 text-sm font-bold">
