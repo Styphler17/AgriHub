@@ -1,17 +1,20 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense, lazy } from 'react';
 import { useObservable, useLiveQuery } from 'dexie-react-hooks';
 import { translations } from './translations';
 import { Language, User, Toast } from './types';
-import Dashboard from './components/Dashboard';
-import CropAdvisor from './components/CropAdvisor';
-import MarketPrices, { MOCK_PRICES } from './components/MarketPrices';
-import Marketplace from './components/Marketplace';
-import SettingsView from './components/Settings';
-import LandingPage from './components/LandingPage';
-import Auth from './components/Auth';
 import ReadingProgressBar from './components/ReadingProgressBar';
 import LogoutModal from './components/LogoutModal';
 import { db } from './db';
+import { MOCK_PRICES } from './components/MarketPrices';
+
+// Lazy load large components for better performance
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const CropAdvisor = lazy(() => import('./components/CropAdvisor'));
+const MarketPrices = lazy(() => import('./components/MarketPrices'));
+const Marketplace = lazy(() => import('./components/Marketplace'));
+const SettingsView = lazy(() => import('./components/Settings'));
+const LandingPage = lazy(() => import('./components/LandingPage'));
+const Auth = lazy(() => import('./components/Auth'));
 import {
   LayoutDashboard,
   Sprout,
@@ -196,25 +199,37 @@ const App: React.FC = () => {
     );
   }
 
+  // Loading fallback component
+  const LoadingFallback = () => (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <RefreshCcw size={48} className="animate-spin text-green-600 mx-auto mb-4" />
+        <p className="text-sm font-bold text-slate-600 dark:text-slate-400">Loading...</p>
+      </div>
+    </div>
+  );
+
   if (showLanding) {
     return (
       <>
         {showLogoutConfirm && <LogoutModal onCancel={() => setShowLogoutConfirm(false)} onConfirm={confirmLogout} />}
-        <LandingPage
-          onGetStarted={() => {
-            if (user) {
-              setShowLanding(false);
-              setShowAuth(false);
-            } else {
-              setAuthMode('signup');
-              setShowLanding(false);
-              setShowAuth(true);
-            }
-          }}
-          onSignIn={() => { setAuthMode('signin'); setShowLanding(false); setShowAuth(true); }}
-          isLoggedIn={!!user}
-          onLogout={handleLogout}
-        />
+        <Suspense fallback={<LoadingFallback />}>
+          <LandingPage
+            onGetStarted={() => {
+              if (user) {
+                setShowLanding(false);
+                setShowAuth(false);
+              } else {
+                setAuthMode('signup');
+                setShowLanding(false);
+                setShowAuth(true);
+              }
+            }}
+            onSignIn={() => { setAuthMode('signin'); setShowLanding(false); setShowAuth(true); }}
+            isLoggedIn={!!user}
+            onLogout={handleLogout}
+          />
+        </Suspense>
       </>
     );
   }
@@ -225,12 +240,16 @@ const App: React.FC = () => {
   const isGuestModeActive = !currentUser.isLoggedIn && (activeTab === 'prices');
 
   if (showAuth || (currentUser.isLoggedIn === false && !isGuestModeActive)) {
-    return <Auth
-      lang={lang}
-      t={t}
-      initialMode={authMode}
-      onBackToHome={() => { setShowLanding(true); setShowAuth(false); }}
-    />;
+    return (
+      <Suspense fallback={<LoadingFallback />}>
+        <Auth
+          lang={lang}
+          t={t}
+          initialMode={authMode}
+          onBackToHome={() => { setShowLanding(true); setShowAuth(false); }}
+        />
+      </Suspense>
+    );
   }
 
   // Guest Mode Logic
@@ -448,23 +467,25 @@ const App: React.FC = () => {
           ref={scrollContainerRef}
           className="flex-1 overflow-y-auto p-6 lg:p-10 max-w-7xl mx-auto w-full custom-scrollbar"
         >
-          {activeTab === 'dashboard' && <Dashboard lang={lang} t={t} darkMode={darkMode} isOnline={isOnline} onNavigate={setActiveTab} />}
-          {activeTab === 'advice' && <CropAdvisor lang={lang} t={t} darkMode={darkMode} />}
-          {activeTab === 'prices' && <MarketPrices lang={lang} t={t} darkMode={darkMode} isOnline={isOnline} user={user} showToast={showToast} />}
-          {activeTab === 'marketplace' && <Marketplace lang={lang} t={t} darkMode={darkMode} user={user} />}
-          {activeTab === 'settings' && user && (
-            <SettingsView
-              user={user}
-              setUser={handleUpdateUser}
-              lang={lang}
-              setLang={setLang}
-              darkMode={darkMode}
-              lowDataMode={lowDataMode}
-              setLowDataMode={setLowDataMode}
-              t={t}
-              showToast={showToast}
-            />
-          )}
+          <Suspense fallback={<LoadingFallback />}>
+            {activeTab === 'dashboard' && <Dashboard lang={lang} t={t} darkMode={darkMode} isOnline={isOnline} onNavigate={setActiveTab} />}
+            {activeTab === 'advice' && <CropAdvisor lang={lang} t={t} darkMode={darkMode} />}
+            {activeTab === 'prices' && <MarketPrices lang={lang} t={t} darkMode={darkMode} isOnline={isOnline} user={user} showToast={showToast} />}
+            {activeTab === 'marketplace' && <Marketplace lang={lang} t={t} darkMode={darkMode} user={user} />}
+            {activeTab === 'settings' && user && (
+              <SettingsView
+                user={user}
+                setUser={handleUpdateUser}
+                lang={lang}
+                setLang={setLang}
+                darkMode={darkMode}
+                lowDataMode={lowDataMode}
+                setLowDataMode={setLowDataMode}
+                t={t}
+                showToast={showToast}
+              />
+            )}
+          </Suspense>
         </div>
 
         <button
