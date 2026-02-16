@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { User, Language } from '../types';
 import { db } from '../db';
+import { notificationService } from '../services/notificationService';
 import {
   User as UserIcon,
   Globe,
@@ -14,7 +15,9 @@ import {
   ShieldCheck,
   Camera,
   Upload,
-  Lock
+  Lock,
+  Bell,
+  BellOff
 } from 'lucide-react';
 
 interface Props {
@@ -51,6 +54,48 @@ const SettingsView: React.FC<Props> = ({
   const [authError, setAuthError] = useState<string | null>(null);
   const [isSaved, setIsSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Notification settings
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [priceAlertsEnabled, setPriceAlertsEnabled] = useState(() =>
+    localStorage.getItem('agrihub_price_alerts') === 'true'
+  );
+  const [weatherAlertsEnabled, setWeatherAlertsEnabled] = useState(() =>
+    localStorage.getItem('agrihub_weather_alerts') === 'true'
+  );
+
+  useEffect(() => {
+    setNotificationsEnabled(notificationService.isEnabled());
+  }, []);
+
+  const handleEnableNotifications = async () => {
+    const permission = await notificationService.requestPermission();
+    if (permission === 'granted') {
+      await notificationService.subscribe();
+      setNotificationsEnabled(true);
+      showToast('Notifications enabled successfully!', 'success');
+    } else {
+      showToast('Notification permission denied', 'error');
+    }
+  };
+
+  const handleDisableNotifications = async () => {
+    await notificationService.unsubscribe();
+    setNotificationsEnabled(false);
+    showToast('Notifications disabled', 'info');
+  };
+
+  const handlePriceAlertsToggle = () => {
+    const newValue = !priceAlertsEnabled;
+    setPriceAlertsEnabled(newValue);
+    localStorage.setItem('agrihub_price_alerts', newValue.toString());
+  };
+
+  const handleWeatherAlertsToggle = () => {
+    const newValue = !weatherAlertsEnabled;
+    setWeatherAlertsEnabled(newValue);
+    localStorage.setItem('agrihub_weather_alerts', newValue.toString());
+  };
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -309,6 +354,67 @@ const SettingsView: React.FC<Props> = ({
                     }`} />
                 </button>
               </div>
+
+              {/* Notification Settings */}
+              <div className="flex items-center justify-between p-5 rounded-3xl bg-slate-50 dark:bg-slate-900/50">
+                <div className="flex items-center gap-4">
+                  <Bell size={20} className="text-slate-400" />
+                  <div>
+                    <div className="font-bold">Push Notifications</div>
+                    <div className="text-[10px] text-slate-500 dark:text-slate-400 font-black uppercase">
+                      {notificationsEnabled ? 'Enabled' : 'Disabled'}
+                    </div>
+                  </div>
+                </div>
+                <button
+                  onClick={notificationsEnabled ? handleDisableNotifications : handleEnableNotifications}
+                  className={`w-14 h-8 rounded-full transition-all relative ${notificationsEnabled ? 'bg-green-600' : 'bg-slate-300'}`}
+                >
+                  <div className={`w-6 h-6 bg-white rounded-full absolute top-1 shadow-md transition-all ${notificationsEnabled ? 'right-1' : 'left-1'}`} />
+                </button>
+              </div>
+
+              {/* Price Alerts */}
+              {notificationsEnabled && (
+                <div className="flex items-center justify-between p-5 rounded-3xl bg-slate-50 dark:bg-slate-900/50 animate-in slide-in-from-top-4">
+                  <div className="flex items-center gap-4">
+                    <div className="text-2xl">📈</div>
+                    <div>
+                      <div className="font-bold">Price Alerts</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-black uppercase">
+                        Get notified of price changes
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handlePriceAlertsToggle}
+                    className={`w-14 h-8 rounded-full transition-all relative ${priceAlertsEnabled ? 'bg-green-600' : 'bg-slate-300'}`}
+                  >
+                    <div className={`w-6 h-6 bg-white rounded-full absolute top-1 shadow-md transition-all ${priceAlertsEnabled ? 'right-1' : 'left-1'}`} />
+                  </button>
+                </div>
+              )}
+
+              {/* Weather Alerts */}
+              {notificationsEnabled && (
+                <div className="flex items-center justify-between p-5 rounded-3xl bg-slate-50 dark:bg-slate-900/50 animate-in slide-in-from-top-4">
+                  <div className="flex items-center gap-4">
+                    <div className="text-2xl">⚠️</div>
+                    <div>
+                      <div className="font-bold">Weather Warnings</div>
+                      <div className="text-[10px] text-slate-500 dark:text-slate-400 font-black uppercase">
+                        Severe weather notifications
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleWeatherAlertsToggle}
+                    className={`w-14 h-8 rounded-full transition-all relative ${weatherAlertsEnabled ? 'bg-green-600' : 'bg-slate-300'}`}
+                  >
+                    <div className={`w-6 h-6 bg-white rounded-full absolute top-1 shadow-md transition-all ${weatherAlertsEnabled ? 'right-1' : 'left-1'}`} />
+                  </button>
+                </div>
+              )}
             </div>
           </section>
 
