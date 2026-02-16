@@ -89,17 +89,7 @@ const LandingPage: React.FC<Props> = ({ onGetStarted, onSignIn, isLoggedIn, onLo
             </nav>
 
             {/* Hero Section */}
-            <section className="relative pt-32 pb-20 px-6 overflow-hidden min-h-[100dvh] flex items-center">
-                {/* Hero Image Background */}
-                <div className="absolute inset-0 z-0">
-                    <img
-                        src="/hero-image.png"
-                        alt="Ghanaian Farmer Using AgriHub"
-                        className="w-full h-full object-cover object-center scale-105 animate-ken-burns"
-                    />
-                    {/* Mobile: High contrast backdrop. Desktop: Directional gradient */}
-                    <div className="absolute inset-0 bg-white/85 lg:bg-gradient-to-r lg:from-white/95 lg:via-white/80 lg:to-transparent/10 backdrop-blur-[2px] lg:backdrop-blur-none transition-all duration-700"></div>
-                </div>
+            <section className="relative pt-32 pb-20 px-6 overflow-hidden min-h-[100dvh] flex items-center bg-gradient-to-br from-white via-green-50/30 to-white">
 
                 <div className="max-w-7xl mx-auto relative z-10 w-full">
                     <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
@@ -174,9 +164,13 @@ const LandingPage: React.FC<Props> = ({ onGetStarted, onSignIn, isLoggedIn, onLo
                             </div>
                         </div>
 
-                        {/* Right: Visual (Hidden on mobile or simplified) */}
-                        <div className="relative animate-in slide-in-from-right duration-1000 delay-200 hidden lg:block order-1 lg:order-2 h-full min-h-[500px]">
-                            {/* Content is visually handled by background image on mobile, keeping DOM structure for desktop layout */}
+                        {/* Right: Visual */}
+                        <div className="relative animate-in slide-in-from-right duration-1000 delay-200 hidden lg:block order-1 lg:order-2">
+                            <img
+                                src="/hero-image.png"
+                                alt="Ghanaian Farmer Using AgriHub"
+                                className="w-full h-auto rounded-[3rem] shadow-2xl object-cover"
+                            />
                         </div>
                     </div>
                 </div>
