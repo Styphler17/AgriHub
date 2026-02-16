@@ -212,8 +212,6 @@ const App: React.FC = () => {
             }
           }}
           onSignIn={() => { setAuthMode('signin'); setShowLanding(false); setShowAuth(true); }}
-          darkMode={darkMode}
-          onToggleTheme={() => setDarkMode(!darkMode)}
           isLoggedIn={!!user}
           onLogout={handleLogout}
         />
