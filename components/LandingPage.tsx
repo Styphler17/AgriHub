@@ -71,7 +71,7 @@ const LandingPage: React.FC<Props> = ({ onGetStarted, onSignIn, isLoggedIn, onLo
             <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-xl bg-white/80 border-b border-slate-200 transition-all duration-300">
                 <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3 cursor-pointer" onClick={scrollToTop}>
-                        <img src="/logo.png" alt="AgriHub Logo" className="w-auto h-16 object-contain" />
+                        <img src="/logo.webp" alt="AgriHub Logo" className="w-auto h-16 object-contain" />
                         <div>
                             <h1 className="text-2xl font-black text-green-600">AgriHub</h1>
                             <p className="text-[8px] uppercase tracking-widest font-bold text-slate-400">Ghana</p>
@@ -171,10 +171,14 @@ const LandingPage: React.FC<Props> = ({ onGetStarted, onSignIn, isLoggedIn, onLo
                             <picture>
                                 <source
                                     type="image/webp"
+                                    srcSet="/hero-image.webp"
+                                />
+                                <source
+                                    type="image/png"
                                     srcSet="/hero-image.png"
                                 />
                                 <img
-                                    src="/hero-image.png"
+                                    src="/hero-image.webp"
                                     alt="Ghanaian Farmer Using AgriHub"
                                     loading="lazy"
                                     decoding="async"
@@ -297,7 +301,7 @@ const LandingPage: React.FC<Props> = ({ onGetStarted, onSignIn, isLoggedIn, onLo
             {/* CTA Section */}
             <section className="py-24 px-6 relative overflow-hidden">
                 <div className="absolute inset-0 bg-green-600"></div>
-                <div className="absolute inset-0 bg-[url('/cta-image.jpeg')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
+                <div className="absolute inset-0 bg-[url('/cta-image.webp')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
 
                 <div className="max-w-4xl mx-auto text-center relative z-10 text-white">
                     <Reveal direction="up">
@@ -326,7 +330,7 @@ const LandingPage: React.FC<Props> = ({ onGetStarted, onSignIn, isLoggedIn, onLo
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
                     <div className="flex items-center gap-2 opacity-50 grayscale hover:grayscale-0 transition-all">
                         <img
-                            src="/logo.png"
+                            src="/logo.webp"
                             alt="AgriHub"
                             className="w-8 h-8 object-contain"
                             loading="lazy"

@@ -321,7 +321,7 @@ const App: React.FC = () => {
         <div className="flex flex-col h-full">
           <div className="p-8">
             <div className="flex items-center gap-3">
-              <img src="/logo.png" alt="AgriHub Logo" className="w-auto h-12 object-contain" />
+              <img src="/logo.webp" alt="AgriHub Logo" className="w-auto h-12 object-contain" />
               <div>
                 <h1 className="text-2xl font-black text-green-600">AgriHub</h1>
                 <p className="text-[8px] uppercase tracking-widest font-bold text-slate-400">Ghana</p>

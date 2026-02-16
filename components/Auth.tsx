@@ -95,7 +95,7 @@ const Auth: React.FC<Props> = ({ lang, t, initialMode = 'signup', onBackToHome }
       {/* Solid Background Image Overlay */}
       <div
         className="fixed inset-0 bg-cover bg-center z-0 pointer-events-none"
-        style={{ backgroundImage: 'url(/og-image.jpeg)' }}
+        style={{ backgroundImage: 'url(/og-image.webp)' }}
       />
 
       {/* Softening Overlay to ensure form readability */}
@@ -122,7 +122,7 @@ const Auth: React.FC<Props> = ({ lang, t, initialMode = 'signup', onBackToHome }
         <div className="relative z-10">
           <div className="flex flex-col items-center mb-10">
             <div className="flex items-center gap-3 mb-4">
-              <img src="/logo.png" alt="AgriHub Logo" className="w-auto h-16 object-contain" />
+              <img src="/logo.webp" alt="AgriHub Logo" className="w-auto h-16 object-contain" />
               <div>
                 <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">AgriHub</h1>
                 <p className="text-slate-500 dark:text-slate-400 font-bold uppercase text-[8px] tracking-widest">Ghana</p>

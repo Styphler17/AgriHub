@@ -132,8 +132,8 @@ class NotificationService {
 
         await this.registration.showNotification(payload.title, {
             body: payload.body,
-            icon: payload.icon || '/logo.png',
-            badge: '/logo.png',
+            icon: payload.icon || '/logo.webp',
+            badge: '/logo.webp',
             tag: payload.tag || 'agrihub-notification',
             requireInteraction: payload.requireInteraction || false,
             vibrate: [200, 100, 200],
@@ -145,7 +145,7 @@ class NotificationService {
                 { action: 'open', title: 'View' },
                 { action: 'close', title: 'Dismiss' }
             ]
-        });
+        } as any);
     }
 
     /**
@@ -192,7 +192,7 @@ class NotificationService {
     /**
      * Helper: Convert VAPID key to Uint8Array
      */
-    private urlBase64ToUint8Array(base64String: string): Uint8Array {
+    private urlBase64ToUint8Array(base64String: string): any {
         const padding = '='.repeat((4 - base64String.length % 4) % 4);
         const base64 = (base64String + padding)
             .replace(/-/g, '+')
@@ -204,7 +204,7 @@ class NotificationService {
         for (let i = 0; i < rawData.length; ++i) {
             outputArray[i] = rawData.charCodeAt(i);
         }
-        return outputArray;
+        return outputArray as unknown as Uint8Array;
     }
 
     /**
