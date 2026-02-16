@@ -116,10 +116,10 @@ const LandingPage: React.FC<Props> = ({ onGetStarted, onSignIn, isLoggedIn, onLo
                                 Connect with buyers and maximize your harvest profits.
                             </p>
 
-                            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                            <div className="flex flex-col gap-4 pt-4">
                                 <button
                                     onClick={onGetStarted}
-                                    className="group px-8 py-4 lg:py-5 bg-green-600 text-white rounded-[1.5rem] lg:rounded-[2rem] font-black text-base lg:text-lg shadow-xl shadow-green-600/20 hover:bg-green-700 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 relative overflow-hidden"
+                                    className="group px-8 py-4 lg:py-5 bg-green-600 text-white rounded-[1.5rem] lg:rounded-[2rem] font-black text-base lg:text-lg shadow-xl shadow-green-600/20 hover:bg-green-700 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 relative overflow-hidden w-full sm:w-auto"
                                 >
                                     <span className="relative z-10 flex items-center gap-3">
                                         {isLoggedIn ? 'Enter Dashboard' : 'Get Started Free'}
@@ -127,24 +127,26 @@ const LandingPage: React.FC<Props> = ({ onGetStarted, onSignIn, isLoggedIn, onLo
                                     </span>
                                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 rounded-[1.5rem]"></div>
                                 </button>
-                                <button
-                                    onClick={isLoggedIn ? onLogout : onSignIn}
-                                    className="px-8 py-4 lg:py-5 border-2 border-slate-200 rounded-[1.5rem] lg:rounded-[2rem] font-black text-base lg:text-lg hover:border-green-600 hover:text-green-600 transition-all backdrop-blur-sm bg-white/50 text-slate-900"
-                                >
-                                    {isLoggedIn ? 'Sign Out' : 'Sign In'}
-                                </button>
-                                {!isLoggedIn && (
+                                <div className="flex flex-col sm:flex-row gap-4">
                                     <button
-                                        onClick={() => {
-                                            // Trigger guest mode
-                                            localStorage.setItem('agrihub_active_tab', 'prices');
-                                            window.location.reload(); // Simple reload to trigger guest state or pass a prop to parent to switch tab
-                                        }}
-                                        className="px-8 py-4 lg:py-5 border-2 border-slate-200 rounded-[1.5rem] lg:rounded-[2rem] font-black text-base lg:text-lg hover:border-blue-600 hover:text-blue-600 transition-all backdrop-blur-sm bg-white/50 text-slate-900 flex items-center gap-2"
+                                        onClick={isLoggedIn ? onLogout : onSignIn}
+                                        className="px-8 py-4 lg:py-5 border-2 border-slate-200 rounded-[1.5rem] lg:rounded-[2rem] font-black text-base lg:text-lg hover:border-green-600 hover:text-green-600 transition-all backdrop-blur-sm bg-white/50 text-slate-900 w-full sm:w-auto"
                                     >
-                                        <TrendingUp size={20} /> Markets
+                                        {isLoggedIn ? 'Sign Out' : 'Sign In'}
                                     </button>
-                                )}
+                                    {!isLoggedIn && (
+                                        <button
+                                            onClick={() => {
+                                                // Trigger guest mode
+                                                localStorage.setItem('agrihub_active_tab', 'prices');
+                                                window.location.reload(); // Simple reload to trigger guest state or pass a prop to parent to switch tab
+                                            }}
+                                            className="px-8 py-4 lg:py-5 border-2 border-slate-200 rounded-[1.5rem] lg:rounded-[2rem] font-black text-base lg:text-lg hover:border-blue-600 hover:text-blue-600 transition-all backdrop-blur-sm bg-white/50 text-slate-900 flex items-center justify-center gap-2 w-full sm:w-auto"
+                                        >
+                                            <TrendingUp size={20} /> Markets
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Trust Badges */}
